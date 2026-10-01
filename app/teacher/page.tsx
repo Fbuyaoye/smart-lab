@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+
 export default async function TeacherDashboardPage() {
   const supabase = createClient(); let classCount = 0; let taskCount = 0; let pendingCount = 0; let setupMessage = "";
   if (!supabase) setupMessage = "数据库尚未连接。配置 .env.local 并执行 supabase/migrations/001_init.sql 后即可看到真实数据。";

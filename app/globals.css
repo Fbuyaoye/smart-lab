@@ -7,7 +7,7 @@ a { color:inherit; text-decoration:none; } button,input,select,textarea { font:i
 .sidebar { background:#111a2e; color:#dce5ff; display:flex; flex-direction:column; padding:28px 18px; width:244px; }
 .brand { margin:0 10px 30px; } .brand strong { color:#fff; display:block; font-size:20px; } .brand span { color:#8fa4d8; display:block; font-size:12px; margin-top:6px; }
 .nav { display:grid; gap:7px; } .nav a { border-radius:10px; color:#b4c2e4; padding:12px 14px; } .nav a:hover { background:#26385f; color:#fff; }
-.sidebar-footer { color:#8494bc; font-size:12px; margin-top:auto; padding:12px 10px; }
+.sidebar-footer { color:#8494bc; font-size:12px; margin-top:auto; padding:12px 10px; } .sidebar-footer span { display:block; margin-top:12px; } .sidebar-logout { background:transparent; border:1px solid #40527d; border-radius:8px; color:#dce5ff; font-size:12px; padding:8px 10px; width:100%; } .sidebar-logout:hover { background:#26385f; }
 .main { flex:1; min-width:0; padding:34px clamp(20px,4vw,56px); } .content { margin:0 auto; max-width:1180px; }
 .topbar { align-items:flex-start; display:flex; justify-content:space-between; gap:20px; margin-bottom:30px; }
 .eyebrow { color:var(--primary); font-size:13px; font-weight:700; letter-spacing:.08em; margin:0 0 8px; text-transform:uppercase; }

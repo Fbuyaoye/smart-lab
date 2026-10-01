@@ -17,6 +17,13 @@ export async function middleware(request: NextRequest) {
     },
   });
   await supabase.auth.getUser();
+  const isTeacherRoute = request.nextUrl.pathname.startsWith("/teacher") && request.nextUrl.pathname !== "/teacher/login";
+  if (isTeacherRoute) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.redirect(new URL("/teacher/login", request.url));
+    const { data: isTeacher } = await supabase.rpc("is_teacher");
+    if (!isTeacher) return NextResponse.redirect(new URL("/teacher/login?error=teacher-only", request.url));
+  }
   return response;
 }
 

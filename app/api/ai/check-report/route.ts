@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 export async function POST(request:Request){
   const supabase=createClient();const apiKey=process.env.DEEPSEEK_API_KEY;if(!supabase)return NextResponse.json({error:"Supabase 尚未配置。"},{status:500});if(!apiKey)return NextResponse.json({error:"DEEPSEEK_API_KEY 尚未配置。"},{status:500});
   const {data:{user}}=await supabase.auth.getUser();if(!user)return NextResponse.json({error:"请先登录教师账号。"},{status:401});const body=await request.json().catch(()=>({}));const reportId=Number(body.reportId);if(!Number.isInteger(reportId))return NextResponse.json({error:"reportId 无效。"},{status:400});
+  const { data: isTeacher, error: roleError } = await supabase.rpc("is_teacher");
+  if (roleError || !isTeacher) return NextResponse.json({error:"只有教师账号可以使用 AI 批改。"},{status:403});
   const {data:report,error:reportError}=await supabase.from("reports").select("id,raw_data,calculation,final_content,tasks!inner(experiment_id,classes!inner(teacher_id),experiments!inner(name,procedure,common_issues))").eq("id",reportId).single();if(reportError||!report)return NextResponse.json({error:"找不到报告，或你没有查看权限。"},{status:404});
   const task=report.tasks as unknown as {experiments:{name:string;procedure:string|null;common_issues:string|null}};const prompt=`实验名称：${task.experiments.name}\n原始数据：${JSON.stringify(report.raw_data)}\n计算过程：${JSON.stringify(report.calculation)}\n学生结论：${report.final_content??"未填写"}\n实验标准步骤：${task.experiments.procedure??"未提供"}\n常见问题：${task.experiments.common_issues??"未提供"}\n\n请分析数据异常、计算正确性和结论合理性，并给出 2-3 条具体改进建议。用简洁中文回答。`;
   const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),30000);

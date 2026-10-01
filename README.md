@@ -19,7 +19,8 @@ npm run dev
 在 Supabase SQL Editor 依次执行：
 
 1. `supabase/migrations/001_init.sql`
-2. `supabase/seed.sql`
+2. `supabase/migrations/002_hardening.sql`
+3. `supabase/seed.sql`
 
 然后在 Supabase Auth 中创建教师账号。创建账号时可在 user metadata 设置：
 
@@ -36,3 +37,13 @@ npm run dev
 - `.env.local` 不得提交到 GitHub。
 - DeepSeek Key 只在服务端 API Route 使用。
 - 生产环境部署前应确认 Supabase 的 RLS 已开启，并用教师、学生两个账号分别走完整流程。
+
+## 教师端验收顺序
+
+1. 在 Supabase Auth 创建教师和学生测试账号。教师账号 metadata 设置 `{"role":"teacher","name":"教师姓名"}`，学生账号设置 `{"role":"student","name":"学生姓名"}`。
+2. 教师登录后创建班级，记录邀请码；学生调用 `join_class` 加入班级。
+3. 教师发布实验任务；学生端按 `tasks -> reports` 约定保存草稿并将状态更新为 `submitted`。
+4. 教师在“报告检查”查看学生报告，生成 AI 建议并保存评分。`submitted_at` 和 `graded_at` 由数据库触发器写入。
+5. 用学生账号确认不能读取其他学生报告、不能写入教师评分或将报告标为 `graded`。
+
+学生端接入时应使用同一个 Supabase 项目和 `NEXT_PUBLIC_SUPABASE_URL`、`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`，不要把 DeepSeek Key 放到浏览器端。
