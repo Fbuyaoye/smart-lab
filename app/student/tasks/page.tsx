@@ -41,7 +41,7 @@ export default function TasksPage() {
             </p >
 
             <Link
-             href="/experiment"
+             href="/student/experiment"
              className="mt-6 inline-block rounded-lg bg-blue-500 px-5 py-2 text-white"
              >
                 开始实验
