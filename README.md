@@ -20,13 +20,18 @@ npm run dev
 
 1. `supabase/migrations/001_init.sql`
 2. `supabase/migrations/002_hardening.sql`
-3. `supabase/seed.sql`
+3. `supabase/migrations/003_security_and_integrity.sql`
+4. `supabase/seed.sql`
 
-然后在 Supabase Auth 中创建教师账号。创建账号时可在 user metadata 设置：
+然后在 Supabase Auth 中创建账号。普通注册默认学生，user metadata 只用于姓名：
 
 ```json
-{"role":"teacher","name":"教师姓名"}
+{"name":"教师姓名"}
 ```
+
+教师角色必须由管理员授权，不能通过 `user_metadata.role` 自行申请。
+已有数据库的升级、教师授权 SQL、线上诊断和验收步骤见 [数据库检查与修复操作说明](docs/database-repair.md)。
+已有部署不要重跑旧迁移覆盖权限；按说明只执行尚未应用的迁移。
 
 ## 分支
 
@@ -40,7 +45,7 @@ npm run dev
 
 ## 教师端验收顺序
 
-1. 在 Supabase Auth 创建教师和学生测试账号。教师账号 metadata 设置 `{"role":"teacher","name":"教师姓名"}`，学生账号设置 `{"role":"student","name":"学生姓名"}`。
+1. 在 Supabase Auth 创建教师和学生测试账号，并按数据库修复说明给教师授权。用户 metadata 可设置 `{"name":"姓名"}`。
 2. 教师登录后创建班级，记录邀请码；学生调用 `join_class` 加入班级。
 3. 教师发布实验任务；学生端按 `tasks -> reports` 约定保存草稿并将状态更新为 `submitted`。
 4. 教师在“报告检查”查看学生报告，生成 AI 建议并保存评分。`submitted_at` 和 `graded_at` 由数据库触发器写入。
