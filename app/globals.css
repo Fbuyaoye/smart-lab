@@ -14,6 +14,9 @@ a { color:inherit; text-decoration:none; } button,input,select,textarea { font:i
 h1 { font-size:clamp(26px,4vw,38px); line-height:1.2; margin:0; } h2 { font-size:20px; margin:0; } h3 { font-size:16px; margin:0; }
 .muted { color:var(--muted); } .small { font-size:13px; } .grid { display:grid; gap:18px; } .stats-grid { grid-template-columns:repeat(3,minmax(0,1fr)); margin-bottom:24px; } .two-col { grid-template-columns:minmax(0,1fr) minmax(280px,.65fr); }
 .card { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:22px; box-shadow:0 8px 24px rgba(31,48,90,.04); }
+.filter-controls { display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
+.filter-controls select { min-width:118px; }
+.sr-only { height:1px; margin:-1px; overflow:hidden; position:absolute; width:1px; clip:rect(0,0,0,0); white-space:nowrap; }
 .stat-value { font-size:34px; font-weight:750; margin-top:12px; } .stat-label { color:var(--muted); font-size:13px; }
 .card-header { align-items:center; display:flex; justify-content:space-between; gap:16px; margin-bottom:18px; }
 .button { background:var(--primary); border:1px solid var(--primary); border-radius:9px; color:#fff; display:inline-flex; justify-content:center; padding:10px 15px; } .button:hover { background:var(--primary-dark); } .button.secondary { background:#fff; border-color:var(--line); color:var(--ink); } .button:disabled { cursor:wait; opacity:.6; }
