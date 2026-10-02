@@ -1,5 +1,8 @@
+"use client";
+//import React from "react";
 import Link from "next/link";
-const tasks = [
+//import{createClient}from"@/lib/supabase/browser";
+const Tasks = [
   {
     title: "测量金属丝的电阻率",
     description: "请完成实验数据记录，并提交实验报告。",
@@ -18,12 +21,38 @@ const tasks = [
 ];
 
 export default function TasksPage() {
+ // const supabase = createClient();
+  //const[tasks,setTasks]=React.useState<any[]>([]);
+  //const[loading,setLoading]=React.useState(true);
+   // React.useEffect(() => {
+   // async function loadTasks() {
+   //   const { data, error } = await supabase
+   //     .from("tasks")
+   //     .select(`
+   //       id,
+   //       deadline,
+   //       classes(name),
+   //       experiments(id, name, principle, key_points, procedure)
+   //     `)
+   //     .order("deadline", { ascending: true });
+
+   //   if (error) {
+    //    console.error("加载任务失败:", error);
+     // } else {
+    //    setTasks(data ?? []);
+    //  }
+
+    //  setLoading(false);
+   // }
+
+  //  loadTasks();
+ // }, []);
   return (
     <main className="min-h-screen bg-zinc-100 p-8">
       <h1 className="text-3xl font-bold">学生任务</h1>
 
       <div className="mt-6 space-y-4">
-        {tasks.map((task) => (
+        {Tasks.map((task) => (
           <div
             key={task.title}
             className="rounded-2xl bg-white p-6 shadow"
