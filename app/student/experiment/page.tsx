@@ -29,6 +29,7 @@ export default function ExperimentPage() {
     const [data, setData] = useState<DataRow[]>(initialData);
 
     const [report, setReport] = useState("");
+    const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
     const updateRow = (
         id: number,
@@ -211,9 +212,51 @@ export default function ExperimentPage() {
     }, [validData, fittingResult]);
 
     const generateReport = () => {
+        setIsGeneratingReport(true);
+        const dataCount = validData.length;
+
+        const resistanceText =
+            averageResistance !== null
+                ? `${averageResistance.toFixed(4)} Ω`
+                : "暂未计算";
+
+        const fittingText =
+            fittingResult !== null
+                ? `U = ${fittingResult.slope.toFixed(4)}I ${fittingResult.intercept >= 0 ? "+" : "-"
+                } ${Math.abs(fittingResult.intercept).toFixed(4)}，R² = ${fittingResult.r2.toFixed(4)}`
+                : "暂未完成拟合";
+
         setReport(
-            "本实验通过测量金属丝两端的电压和通过金属丝的电流，根据欧姆定律计算电阻，并通过实验数据进行线性拟合。当前报告为演示版本，后续将接入 DeepSeek 自动生成完整实验报告。"
+            `一、实验概述
+
+            本实验通过测量金属丝两端的电压和通过金属丝的电流，根据欧姆定律计算金属丝的电阻，并通过实验数据进行线性拟合。
+
+            二、实验数据
+
+            当前共录入 ${dataCount} 组有效实验数据。
+
+            三、数据处理
+
+            根据实验数据计算得到的平均电阻为 ${resistanceText}。
+
+            线性拟合结果为：
+
+            ${fittingText}
+
+            四、实验分析
+
+            从当前实验数据来看，电压与电流之间具有一定的线性关系。线性拟合结果可以用于进一步分析金属丝的电阻特性。
+
+            五、实验结论
+
+            本实验完成了金属丝电压、电流数据的采集，并进行了电阻计算和线性拟合。后续可结合完整实验参数进一步计算金属丝的电阻率，并对实验误差进行分析。
+            
+            【当前为演示版本】
+            
+            后续将接入 AI 实验导师，根据实验原理、原始数据、计算结果和拟合结果自动生成更加完整的实验报告。`
         );
+
+        setIsGeneratingReport(false);
     };
 
     const tabs = [
@@ -1025,17 +1068,128 @@ export default function ExperimentPage() {
 
                             <button
                                 onClick={generateReport}
-                                className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-blue-700"
+                                disabled={isGeneratingReport}
+                                className={`rounded-xl px-5 py-3 text-sm font-medium text-white transition ${isGeneratingReport
+                                        ? "cursor-not-allowed bg-blue-400"
+                                        : "bg-blue-600 hover:bg-blue-700"
+                                    }`}
                             >
-                                生成报告
+                                {isGeneratingReport ? "正在分析..." : "生成报告"}
                             </button>
                         </div>
 
                         <div className="mt-6 min-h-72 rounded-xl border border-slate-200 bg-slate-50 p-6">
                             {report ? (
-                                <p className="whitespace-pre-line text-sm leading-8 text-slate-600">
-                                    {report}
-                                </p>
+                                <div className="space-y-5">
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                                            ✦
+                                        </div>
+
+                                        <div>
+                                            <p className="text-sm font-semibold text-slate-800">
+                                                AI 实验分析
+                                            </p>
+
+                                            <p className="mt-0.5 text-xs text-slate-400">
+                                                基于当前实验数据生成
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                                        <div className="rounded-xl border border-slate-200 bg-white p-4">
+                                            <p className="text-xs text-slate-400">
+                                                有效数据
+                                            </p>
+                                            <p className="mt-2 text-xl font-semibold text-slate-800">
+                                                {validData.length}
+                                                <span className="ml-1 text-xs font-normal text-slate-400">
+                                                    组
+                                                </span>
+                                            </p>
+                                        </div>
+
+                                        <div className="rounded-xl border border-slate-200 bg-white p-4">
+                                            <p className="text-xs text-slate-400">
+                                                平均电阻
+                                            </p>
+                                            <p className="mt-2 text-xl font-semibold text-slate-800">
+                                                {averageResistance !== null
+                                                    ? averageResistance.toFixed(4)
+                                                    : "--"}
+                                                <span className="ml-1 text-xs font-normal text-slate-400">
+                                                    Ω
+                                                </span>
+                                            </p>
+                                        </div>
+
+                                        <div className="rounded-xl border border-slate-200 bg-white p-4">
+                                            <p className="text-xs text-slate-400">
+                                                拟合斜率
+                                            </p>
+                                            <p className="mt-2 text-xl font-semibold text-slate-800">
+                                                {fittingResult
+                                                    ? fittingResult.slope.toFixed(4)
+                                                    : "--"}
+                                            </p>
+                                        </div>
+
+                                        <div className="rounded-xl border border-slate-200 bg-white p-4">
+                                            <p className="text-xs text-slate-400">
+                                                拟合 R²
+                                            </p>
+                                            <p className="mt-2 text-xl font-semibold text-slate-800">
+                                                {fittingResult
+                                                    ? fittingResult.r2.toFixed(4)
+                                                    : "--"}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {fittingResult && (
+                                        <div
+                                            className={`rounded-xl border p-4 ${fittingResult.r2 >= 0.95
+                                                ? "border-green-200 bg-green-50"
+                                                : "border-amber-200 bg-amber-50"
+                                                }`}
+                                        >
+                                            <div className="flex items-start gap-3">
+                                                <div
+                                                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${fittingResult.r2 >= 0.95
+                                                        ? "bg-green-100 text-green-600"
+                                                        : "bg-amber-100 text-amber-600"
+                                                        }`}
+                                                >
+                                                    {fittingResult.r2 >= 0.95 ? "✓" : "!"}
+                                                </div>
+
+                                                <div>
+                                                    <p
+                                                        className={`text-sm font-semibold ${fittingResult.r2 >= 0.95
+                                                            ? "text-green-700"
+                                                            : "text-amber-700"
+                                                            }`}
+                                                    >
+                                                        {fittingResult.r2 >= 0.95
+                                                            ? "数据线性相关性良好"
+                                                            : "建议检查实验数据"}
+                                                    </p>
+
+                                                    <p className="mt-1 text-xs leading-5 text-slate-500">
+                                                        {fittingResult.r2 >= 0.95
+                                                            ? "当前拟合结果具有较好的线性相关性，可以继续进行实验结果分析。"
+                                                            : "当前拟合结果的线性相关性较弱，建议检查原始数据及实验操作。"}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="rounded-xl border border-slate-200 bg-white p-5">
+                                        <p className="whitespace-pre-line text-sm leading-8 text-slate-600">
+                                            {report}
+                                        </p>
+                                    </div>
+                                </div>
                             ) : (
                                 <div className="flex min-h-60 items-center justify-center text-sm text-slate-400">
                                     点击右上角“生成报告”，AI
