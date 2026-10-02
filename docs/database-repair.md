@@ -1,5 +1,7 @@
 # 数据库检查与修复操作说明
 
+**当前进度：用户已执行修复，17 项验收全部 PASS；2026-10-02 22:14（Asia/Shanghai）公开 API 复查确认匿名访问已被拒绝。无需重跑下面的迁移步骤，接下来仅需第5节的业务验收。**
+
 本项目不能通过 publishable key 直接读取 Supabase 数据库结构。请在 Supabase Dashboard 中操作：打开正确项目的 **SQL Editor**，使用能运行管理 SQL 的账号执行迁移。
 
 本次项目：`cvznriztyfugjrgubobj`。Project URL 为 `https://cvznriztyfugjrgubobj.supabase.co`。
@@ -14,6 +16,12 @@
 4. 已确认六张表以及 `reports.submitted_at`、`reports.graded_at` 存在时，再运行 `supabase/diagnostics.sql` 的各个编号查询，保存各自结果。可选中一个查询后点击 **Run**；一次执行全部语句时，界面可能只显示最后一组结果。
 
 ## 2. 应用修复
+
+**针对已收到的 `cvznriztyfugjrgubobj` preflight 结果：** 六张表已开启 RLS，16 条策略、9 个函数和5个已启用触发器与 001/002 相符；角色来源仍是 `raw_user_meta_data`，登录用户仍有六张表的 TRUNCATE 权限，未见 003 的任务保护触发器。这次只需执行 **003**。不要重跑 001/002；`seed.sql` 仅在需要补充三个示例实验时执行，不是权限修复的前置步骤。
+
+执行 003 后，新建查询并运行 `supabase/verify_repair.sql` 全文，将返回的17行结果复制回来。前11项应为 `PASS`；后6项出现 `REVIEW` 表示存在需要核对的数据，不要据此批量删数据或取消教师角色。已有教师角色不会被 003 自动撤销，必须核实其授权来源。全部 `PASS` 也不能代替教师/学生账号的业务验收。
+
+以下顺序仅供全新项目或其他部署参考：
 
 按以下顺序执行，每个脚本执行成功后再执行下一个：
 
