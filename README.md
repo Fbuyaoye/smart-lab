@@ -20,7 +20,7 @@
 在终端执行：
 
 ```bash
-cd /Users/mac/Documents/Codex/2026-10-02/users-mac-work-smartlab/outputs/smart-lab-fit-toolkit
+cd users-mac-work-smartlab/outputs/smart-lab-fit-toolkit
 npm install
 npm run dev
 ```
