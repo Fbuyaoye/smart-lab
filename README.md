@@ -12,9 +12,15 @@
 
 ```bash
 npm install
-copy .env.example .env.local
+cp .env.example .env.local
 npm run dev
 ```
+
+复制后必须填写 `.env.local` 中的 `NEXT_PUBLIC_SUPABASE_URL` 和 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`；示例文件中的空值不能用于登录。旧版项目也可以通过 `NEXT_PUBLIC_SUPABASE_ANON_KEY` 提供 anon key。Windows 命令提示符中使用 `copy` 代替 `cp`。
+
+当前 Supabase 项目地址为 `https://cvznriztyfugjrgubobj.supabase.co`，公开 key 从同一项目的 **Settings → API Keys** 获取，或使用学生端已有的相同公开配置。修改后重启开发服务。`DEEPSEEK_API_KEY` 可留空，不影响登录和报告读取。
+
+如果报错发生在线上网站，需在部署平台设置上述两项环境变量，并重新构建和部署；本地 `.env.local` 不会上传到部署平台。Next.js 在构建时写入 `NEXT_PUBLIC_*` 配置，仅刷新浏览器不会更新它们。
 
 在 Supabase SQL Editor 依次执行：
 

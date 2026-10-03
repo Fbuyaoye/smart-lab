@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/browser";
+import { getSupabaseConfigurationError } from "@/lib/supabase/config";
 
 const accessMessages: Record<string, string> = {
   "teacher-only": "该账号已登录，但还没有教师权限。请让管理员把 public.users.role 设置为 teacher，然后退出并重新登录。",
@@ -14,6 +15,7 @@ const accessMessages: Record<string, string> = {
 
 export default function TeacherLoginPage() {
   const supabase = createClient();
+  const configurationError = getSupabaseConfigurationError();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -30,7 +32,7 @@ export default function TeacherLoginPage() {
     setError("");
     setAccessError("");
     if (!supabase) {
-      setError("尚未配置 Supabase 环境变量，请先复制 .env.example 为 .env.local。");
+      setError(configurationError);
       return;
     }
     setLoading(true);
@@ -56,7 +58,7 @@ export default function TeacherLoginPage() {
     }
   }
 
-  const visibleError = error || accessError;
+  const visibleError = configurationError || error || accessError;
   return (
     <main className="login-shell">
       <section className="login-card">
@@ -73,7 +75,7 @@ export default function TeacherLoginPage() {
             <label htmlFor="password">密码</label>
             <input id="password" name="password" type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} />
           </div>
-          <button className="button" type="submit" disabled={loading}>{loading ? "登录中…" : "登录教师端"}</button>
+          <button className="button" type="submit" disabled={loading || !supabase}>{loading ? "登录中…" : "登录教师端"}</button>
         </form>
         <p className="muted small" style={{ marginTop:20 }}><Link href="/">返回首页</Link></p>
       </section>

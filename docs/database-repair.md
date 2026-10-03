@@ -6,7 +6,7 @@
 
 本次项目：`cvznriztyfugjrgubobj`。Project URL 为 `https://cvznriztyfugjrgubobj.supabase.co`。
 控制台入口：[打开 SQL Editor](https://supabase.com/dashboard/project/cvznriztyfugjrgubobj/sql)。
-本地 `.env.local` 已填入提供的 URL 和 publishable key，并被 Git 忽略；部署平台的环境变量需单独填写，然后重新部署。`DEEPSEEK_API_KEY` 仍为空，AI 批改暂不可用，不影响数据库连接。
+`.env.local` 被 Git 忽略，不随代码同步；新检出的项目需重新填写 URL 和 publishable key（也兼容 `NEXT_PUBLIC_SUPABASE_ANON_KEY`）。部署平台的环境变量需单独填写，然后重新构建和部署。`DEEPSEEK_API_KEY` 可留空，仅影响 AI 批改，不影响登录和报告读取。
 
 ## 1. 先确认项目和备份
 
