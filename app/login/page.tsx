@@ -1,8 +1,10 @@
 "use client";
 
 import React from "react";
+import { createClient } from "@/lib/supabase/browser";
 
 export default function LoginPage() {
+    const supabase = createClient();
     const [studentId, setStudentId] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [error, setError] = React.useState("");
@@ -21,12 +23,12 @@ export default function LoginPage() {
                     }}
                 >
                     {/* 深色渐变遮罩，让文字更清晰 */}
-                    <div className="absolute inset-0 bg-slate-950/60" /> 
-                    
+                    <div className="absolute inset-0 bg-slate-950/60" />
 
-                    {/* 蓝色氛围渐变 */} 
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-950/50 via-blue-900/20 to-slate-950/70"  />
-                   
+
+                    {/* 蓝色氛围渐变 */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-950/50 via-blue-900/20 to-slate-950/70" />
+
 
                     {/* 内容 */}
                     <div className="relative z-10">
@@ -183,15 +185,31 @@ export default function LoginPage() {
                                 className="w-full rounded-xl bg-blue-600 px-4 py-3.5 font-medium text-white shadow-lg
                                 shadow-blue-200 transition hover:bg-blue-700
                                 hover:shadow-xl active:scale-[0.98]"
-                                onClick={(e) => {
+                                onClick={async () => {
                                     if (studentId === "" || password === "") {
-                                        console.log("学号或密码不能为空");
                                         setError("学号或密码不能为空");
                                         return;
                                     }
+
+                                    if (!supabase) {
+                                        setError("Supabase 未配置");
+                                        return;
+                                    }
+
                                     setError("");
-                                    window.location.href = "/student";  
-                                    //console.log("登录信息:", studentId, password);
+
+                                    const { error } = await supabase.auth.signInWithPassword({
+                                        email: studentId,
+                                        password,
+                                    });
+
+                                    if (error) {
+                                        console.error("登录失败:", error);
+                                        setError(error.message);
+                                        return;
+                                    }
+
+                                    window.location.href = "/student";
                                 }}
                             >
                                 登录

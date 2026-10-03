@@ -1,11 +1,20 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/browser";
 
 type DataRow = {
     id: number;
     voltage: string;
     current: string;
+};
+
+type Experiment = {
+    id: number;
+    name: string;
+    principle: string | null;
+    key_points: string | null;
+    procedure: string | null;
 };
 
 type Tab =
@@ -24,12 +33,89 @@ const initialData: DataRow[] = [
 ];
 
 export default function ExperimentPage() {
+    const [taskId, setTaskId] = useState<string | null>(null);
+    const supabase = useMemo(() => createClient(), []);
+
     const [activeTab, setActiveTab] = useState<Tab>("principle");
+    const [experiment, setExperiment] = useState<Experiment | null>(null);
+    const [experimentLoading, setExperimentLoading] = useState(true);
+    const [experimentError, setExperimentError] = useState("");
 
     const [data, setData] = useState<DataRow[]>(initialData);
 
     const [report, setReport] = useState("");
     const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        setTaskId(params.get("taskId"));
+    }, []);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        async function loadExperiment() {
+            if (!supabase) {
+                if (!cancelled) {
+                    setExperimentError("Supabase 未配置");
+                    setExperimentLoading(false);
+                }
+                return;
+            }
+
+            if (!taskId) {
+                if (!cancelled) {
+                    setExperimentError("缺少任务 ID，请从任务列表进入实验。");
+                    setExperimentLoading(false);
+                }
+                return;
+            }
+
+            setExperimentLoading(true);
+            setExperimentError("");
+
+            const { data: task, error: taskError } = await supabase
+                .from("tasks")
+                .select("experiment_id")
+                .eq("id", Number(taskId))
+                .single();
+
+            if (taskError) {
+                console.error("加载任务失败:", taskError);
+                if (!cancelled) {
+                    setExperimentError("加载任务失败：" + taskError.message);
+                    setExperimentLoading(false);
+                }
+                return;
+            }
+
+            const { data: exp, error: experimentError } = await supabase
+                .from("experiments")
+                .select("id, name, principle, key_points, procedure")
+                .eq("id", task.experiment_id)
+                .single();
+
+            if (experimentError) {
+                console.error("加载实验失败:", experimentError);
+                if (!cancelled) {
+                    setExperimentError("加载实验失败：" + experimentError.message);
+                    setExperimentLoading(false);
+                }
+                return;
+            }
+
+            if (!cancelled) {
+                setExperiment(exp as Experiment);
+                setExperimentLoading(false);
+            }
+        }
+
+        loadExperiment();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [supabase, taskId]);
 
     const updateRow = (
         id: number,
@@ -274,7 +360,9 @@ export default function ExperimentPage() {
             <div>
                 <div className="flex items-center gap-3">
                     <h1 className="text-3xl font-bold tracking-tight text-slate-800">
-                        测量金属丝的电阻率
+                        {experimentLoading
+                            ? "正在加载实验..."
+                            : experiment?.name ?? "实验"}
                     </h1>
 
                     <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600">
@@ -283,7 +371,7 @@ export default function ExperimentPage() {
                 </div>
 
                 <p className="mt-2 text-sm text-slate-400">
-                    电学实验 · 实验任务
+                    {taskId ? `实验任务 · 任务 #${taskId}` : "实验任务"}
                 </p>
             </div>
 
@@ -311,6 +399,12 @@ export default function ExperimentPage() {
                 </div>
             </div>
 
+            {experimentError && (
+                <div className="mt-6 rounded-2xl border border-red-100 bg-red-50 p-5 text-sm text-red-600">
+                    {experimentError}
+                </div>
+            )}
+
             {/* ================= 实验原理 ================= */}
             {activeTab === "principle" && (
                 <div className="mt-6 space-y-6">
@@ -330,9 +424,8 @@ export default function ExperimentPage() {
                             </div>
                         </div>
 
-                        <p className="mt-5 text-sm leading-8 text-slate-500">
-                            测量金属丝两端的电压和通过金属丝的电流，
-                            根据欧姆定律计算金属丝的电阻，并进一步完成实验数据处理。
+                        <p className="mt-5 whitespace-pre-line text-sm leading-8 text-slate-500">
+                            {experiment?.principle ?? "暂无实验原理"}
                         </p>
                     </section>
 
@@ -357,31 +450,26 @@ export default function ExperimentPage() {
                             </p>
                         </div>
 
+                        {experiment?.key_points && (
+                            <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50/50 p-5">
+                                <p className="text-sm font-medium text-slate-700">
+                                    实验要点
+                                </p>
+                                <p className="mt-3 whitespace-pre-line text-sm leading-7 text-slate-600">
+                                    {experiment.key_points}
+                                </p>
+                            </div>
+                        )}
+
                         <div className="mt-6">
                             <p className="text-sm font-medium text-slate-700">
-                                实验流程
+                                实验步骤
                             </p>
 
-                            <div className="mt-4 grid gap-3 sm:grid-cols-4">
-                                {[
-                                    "准备实验器材",
-                                    "连接实验电路",
-                                    "测量实验数据",
-                                    "完成数据处理",
-                                ].map((item, index) => (
-                                    <div
-                                        key={item}
-                                        className="rounded-xl border border-slate-100 bg-slate-50 p-4"
-                                    >
-                                        <span className="text-xs font-semibold text-blue-600">
-                                            0{index + 1}
-                                        </span>
-
-                                        <p className="mt-2 text-sm font-medium text-slate-700">
-                                            {item}
-                                        </p>
-                                    </div>
-                                ))}
+                            <div className="mt-4 rounded-xl bg-slate-50 p-5">
+                                <p className="whitespace-pre-line text-sm leading-8 text-slate-600">
+                                    {experiment?.procedure ?? "暂无实验步骤"}
+                                </p>
                             </div>
                         </div>
                     </section>
