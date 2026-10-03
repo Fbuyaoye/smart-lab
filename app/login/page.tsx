@@ -25,10 +25,8 @@ export default function LoginPage() {
                     {/* 深色渐变遮罩，让文字更清晰 */}
                     <div className="absolute inset-0 bg-slate-950/60" />
 
-
                     {/* 蓝色氛围渐变 */}
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-950/50 via-blue-900/20 to-slate-950/70" />
-
 
                     {/* 内容 */}
                     <div className="relative z-10">
@@ -53,7 +51,7 @@ export default function LoginPage() {
                         <div>
                             <p className="mb-4 text-sm font-medium tracking-[0.2em] text-blue-100">
                                 UNIVERSITY PHYSICS LAB
-                            </p >
+                            </p>
 
                             <h1 className="text-4xl font-bold leading-tight xl:text-5xl">
                                 让物理实验
@@ -63,7 +61,7 @@ export default function LoginPage() {
 
                             <p className="mt-6 max-w-md text-base leading-7 text-blue-100">
                                 集实验任务、数据处理、拟合分析与智能报告于一体的大学物理实验学习平台。
-                            </p >
+                            </p>
                         </div>
                     </div>
 
@@ -106,6 +104,7 @@ export default function LoginPage() {
                         </div>
                     </div>
                 </section>
+
                 {/* 右侧：登录 */}
                 <section className="flex w-full items-center justify-center px-6 py-10 sm:px-12 lg:w-1/2">
 
@@ -123,7 +122,7 @@ export default function LoginPage() {
 
                             <p className="mt-2 text-sm text-slate-500">
                                 大学物理实验智能导师平台
-                            </p >
+                            </p>
                         </div>
 
                         {/* 登录标题 */}
@@ -134,7 +133,7 @@ export default function LoginPage() {
 
                             <p className="mt-2 text-sm text-slate-500">
                                 登录智实验，开始今天的实验学习
-                            </p >
+                            </p>
                         </div>
 
                         {/* 表单 */}
@@ -161,30 +160,24 @@ export default function LoginPage() {
                                 </label>
 
                                 <input
-                                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-slate-900 outline-none transition
-                                    placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
-
+                                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
                                     type="password"
-
                                     placeholder="请输入密码"
-
                                     value={password}
-
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
                             </div>
+
                             {/* 错误提示 */}
                             {error && (
-                                <div
-                                    className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+                                <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
                                     {error}
                                 </div>
                             )}
+
                             {/* 登录按钮 */}
                             <button
-                                className="w-full rounded-xl bg-blue-600 px-4 py-3.5 font-medium text-white shadow-lg
-                                shadow-blue-200 transition hover:bg-blue-700
-                                hover:shadow-xl active:scale-[0.98]"
+                                className="w-full rounded-xl bg-blue-600 px-4 py-3.5 font-medium text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700 hover:shadow-xl active:scale-[0.98]"
                                 onClick={async () => {
                                     if (studentId === "" || password === "") {
                                         setError("学号或密码不能为空");
@@ -198,10 +191,11 @@ export default function LoginPage() {
 
                                     setError("");
 
-                                    const { error } = await supabase.auth.signInWithPassword({
-                                        email: studentId,
-                                        password,
-                                    });
+                                    const { error } =
+                                        await supabase.auth.signInWithPassword({
+                                            email: studentId,
+                                            password,
+                                        });
 
                                     if (error) {
                                         console.error("登录失败:", error);
@@ -215,16 +209,16 @@ export default function LoginPage() {
                                 登录
                             </button>
                         </div>
+
                         {/* 底部 */}
                         <div className="mt-10 border-t border-slate-100 pt-6 text-center">
-                            <p
-                                className="text-xs text-slate-400">
+                            <p className="text-xs text-slate-400">
                                 大学物理实验 · 智能学习助手
-                            </p >
+                            </p>
                         </div>
                     </div>
                 </section>
             </div>
-        </main >
+        </main>
     );
 }

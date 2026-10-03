@@ -1,365 +1,499 @@
 .curve-fit-workbench {
-    --fit-ink: #172033;
-    --fit-muted: #4b5563;
-    --fit-line: #e3e8f1;
-    --fit-surface: #ffffff;
-    --fit-soft: #f6f8fc;
-    --fit-primary: #315efb;
-    --fit-primary-dark: #2346c5;
-
-    color: var(--fit-ink);
-    background: #ffffff;
-
-    font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
-    max-width: 1180px;
-    margin: 0 auto;
-    color-scheme: light;
+  width: 100%;
+  color: #0f172a;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 }
 
+/* ---------- 顶部 ---------- */
+
 .curve-fit-heading {
-    align-items: flex-start;
-    display: flex;
-    gap: 20px;
-    justify-content: space-between;
-    margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
 .curve-fit-heading p {
-    color: var(--fit-primary);
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: .08em;
-    margin: 0 0 8px;
-}
-
-.curve-fit-heading h1,
-.curve-fit-panel h2 {
-    letter-spacing: 0;
-    margin: 0;
+  margin: 0 0 4px;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .curve-fit-heading h1 {
-    font-size: clamp(26px, 4vw, 38px);
-    font-weight: 700;
-    line-height: 1.2;
+  margin: 0;
+  color: #0f172a;
+  font-size: 26px;
+  line-height: 1.3;
+  font-weight: 700;
 }
+
+/* ---------- 整体布局 ---------- */
 
 .curve-fit-layout {
-    display: grid;
-    grid-template-columns: minmax(280px, 350px) minmax(0, 1fr);
-    gap: 20px;
+  display: grid;
+  grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.6fr);
+  gap: 20px;
+  align-items: start;
 }
 
+/* ---------- 卡片 ---------- */
+
 .curve-fit-panel {
-    background: var(--fit-surface);
-    border: 1px solid var(--fit-line);
-    border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(31, 48, 90, .04);
-    padding: 22px;
+  min-width: 0;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 8px 24px rgba(15, 23, 42, 0.05);
 }
 
 .curve-fit-panel-title {
-    align-items: baseline;
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .curve-fit-panel-title h2 {
-    font-size: 20px;
-    font-weight: 600;
+  margin: 0;
+  color: #0f172a;
+  font-size: 17px;
+  line-height: 1.4;
+  font-weight: 650;
 }
 
-.curve-fit-panel-title span,
-.curve-fit-legend {
-    color: var(--fit-muted);
-    font-size: 13px;
+.curve-fit-panel-title span {
+  flex-shrink: 0;
+  padding: 4px 9px;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
 }
+
+/* ---------- 表格 ---------- */
 
 .curve-fit-table-wrap {
-    margin-top: 14px;
-    overflow-x: auto;
+  overflow-x: auto;
+  margin-bottom: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
 }
 
 .curve-fit-table-wrap table {
-    border-collapse: collapse;
-    width: 100%;
-}
-
-.curve-fit-table-wrap th,
-.curve-fit-table-wrap td {
-    border-bottom: 1px solid var(--fit-line);
-    padding: 14px 10px;
-    text-align: left;
-    vertical-align: top;
-    font-size: 14px;
-}
-
-.curve-fit-table-wrap th:last-child,
-.curve-fit-table-wrap td:last-child {
-    padding-left: 4px;
-    padding-right: 0;
-    text-align: right;
-    white-space: nowrap;
-    width: 64px;
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 360px;
 }
 
 .curve-fit-table-wrap th {
-    color: var(--fit-muted);
-    font-size: 12px;
-    font-weight: 600;
+  height: 42px;
+  padding: 0 12px;
+  color: #475569;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
 }
+
+.curve-fit-table-wrap td {
+  height: 52px;
+  padding: 6px 10px;
+  color: #334155;
+  background: #ffffff;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+}
+
+.curve-fit-table-wrap tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.curve-fit-table-wrap tbody tr:hover td {
+  background: #f8fafc;
+}
+
+.curve-fit-table-wrap td:first-child,
+.curve-fit-table-wrap th:first-child {
+  width: 54px;
+  text-align: center;
+  color: #64748b;
+}
+
+/* ---------- 输入框 ---------- */
 
 .curve-fit-table-wrap input,
 .curve-fit-field select {
-    background: #fff;
-    border: 1px solid #ced6e4;
-    border-radius: 9px;
-    box-sizing: border-box;
-    color: var(--fit-ink);
-    font: inherit;
-    min-width: 0;
-    padding: 11px 12px;
-    width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  color: #0f172a;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+.curve-fit-table-wrap input {
+  height: 36px;
+  padding: 0 10px;
+  font-size: 14px;
+}
+
+.curve-fit-table-wrap input::placeholder {
+  color: #94a3b8;
+}
+
+.curve-fit-table-wrap input:hover,
+.curve-fit-field select:hover {
+  border-color: #94a3b8;
 }
 
 .curve-fit-table-wrap input:focus,
 .curve-fit-field select:focus {
-    border-color: var(--fit-primary);
-    box-shadow: 0 0 0 3px rgba(49, 94, 251, .12);
-    outline: 0;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
 }
 
-.curve-fit-icon-button,
-.curve-fit-add {
-    border-radius: 9px;
-    font: inherit;
-    padding: 9px 12px;
-    transition: background .15s ease, border-color .15s ease, color .15s ease;
-}
-
-.curve-fit-icon-button {
-    background: #fff1f0;
-    border: 1px solid #f0b8b1;
-    color: #b42318;
-    font-size: 13px;
-}
-
-.curve-fit-icon-button:hover {
-    background: #ffe3e0;
-    border-color: #d98b82;
-    color: #8f1d14;
-}
-
-.curve-fit-icon-button:disabled {
-    background: #f1f3f7;
-    border-color: #e3e8f1;
-    color: #94a3b8;
-    cursor: not-allowed;
-}
-
-.curve-fit-add {
-    background: #fff;
-    border: 1px solid #b9c8f5;
-    color: var(--fit-primary);
-    display: block;
-    margin-top: 14px;
-    width: 100%;
-}
-
-.curve-fit-add:hover {
-    background: #eef2ff;
-    border-color: var(--fit-primary);
-    color: var(--fit-primary-dark);
-}
+/* ---------- 字段 ---------- */
 
 .curve-fit-field {
-    display: block;
-    font-size: 13px;
-    font-weight: 700;
-    margin-top: 20px;
+  display: block;
+  margin-top: 18px;
 }
 
 .curve-fit-field span {
-    display: block;
-    margin-bottom: 6px;
+  display: block;
+  margin-bottom: 7px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
 }
+
+.curve-fit-field select {
+  height: 40px;
+  padding: 0 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* ---------- 按钮统一 ---------- */
 
 .curve-fit-download,
+.curve-fit-add,
+.curve-fit-submit,
+.curve-fit-icon-button {
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.05s ease;
+}
+
+.curve-fit-download:active,
+.curve-fit-add:active,
+.curve-fit-submit:active,
+.curve-fit-icon-button:active {
+  transform: translateY(1px);
+}
+
+.curve-fit-download:disabled,
+.curve-fit-submit:disabled,
+.curve-fit-add:disabled,
+.curve-fit-icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* 顶部下载按钮 */
+
+.curve-fit-download {
+  min-height: 38px;
+  padding: 0 14px;
+  color: #334155;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.curve-fit-download:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+/* 添加数据 */
+
+.curve-fit-add {
+  width: 100%;
+  min-height: 38px;
+  color: #2563eb;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.curve-fit-add:hover:not(:disabled) {
+  background: #dbeafe;
+  border-color: #93c5fd;
+}
+
+/* 删除 */
+
+.curve-fit-icon-button {
+  padding: 5px 8px;
+  color: #64748b;
+  background: transparent;
+  border-radius: 7px;
+  font-size: 12px;
+}
+
+.curve-fit-icon-button:hover:not(:disabled) {
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+/* 生成按钮 */
+
 .curve-fit-submit {
-    background: var(--fit-primary);
-    border: 1px solid var(--fit-primary);
-    border-radius: 9px;
-    color: #fff;
-    font: inherit;
-    padding: 10px 15px;
+  width: 100%;
+  min-height: 42px;
+  margin-top: 18px;
+  padding: 0 16px;
+  color: #ffffff;
+  background: #2563eb;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
+  font-size: 14px;
+  font-weight: 600;
 }
 
-.curve-fit-download:hover,
-.curve-fit-submit:hover {
-    background: var(--fit-primary-dark);
-    border-color: var(--fit-primary-dark);
+.curve-fit-submit:hover:not(:disabled) {
+  background: #1d4ed8;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.18);
 }
 
-.curve-fit-download:disabled {
-    background: #b9c5e7;
-    border-color: #b9c5e7;
-    color: #fff;
-    cursor: not-allowed;
-}
-
-.curve-fit-submit {
-    margin-top: 18px;
-    width: 100%;
-}
+/* ---------- 错误提示 ---------- */
 
 .curve-fit-error {
-    color: #b42318;
-    font-size: 14px;
-    margin: 12px 0 0;
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 9px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ---------- 结果区域 ---------- */
+
+.curve-fit-output {
+  min-height: 520px;
 }
 
 .curve-fit-empty {
-    align-items: center;
-    color: var(--fit-muted);
-    display: flex;
-    justify-content: center;
-    min-height: 430px;
-    text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 420px;
+  padding: 40px;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  font-size: 14px;
+  text-align: center;
 }
+
+/* ---------- 拟合公式 ---------- */
 
 .curve-fit-equation {
-    background: #f7f9fe;
-    border-left: 3px solid var(--fit-primary);
-    color: var(--fit-ink);
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 14px;
-    margin: 18px 0;
-    padding: 12px 14px;
-    word-break: break-word;
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  color: #1e3a8a;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 10px;
+  font-family:
+    "SFMono-Regular",
+    Consolas,
+    "Liberation Mono",
+    monospace;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.6;
 }
 
+/* ---------- 参数区域 ---------- */
+
 .curve-fit-parameters {
-    border-top: 1px solid var(--fit-line);
-    margin-top: 16px;
-    padding-top: 14px;
+  margin-top: 18px;
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
 }
 
 .curve-fit-parameters h3 {
-    font-size: 16px;
-    font-weight: 600;
-    margin: 0 0 10px;
+  margin: 0 0 12px;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 650;
 }
 
 .curve-fit-parameters dl {
-    display: grid;
-    gap: 8px 14px;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
 }
 
-.curve-fit-parameters dl div {
-    min-width: 0;
+.curve-fit-parameters dl > div {
+  padding: 10px 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
 }
 
 .curve-fit-parameters dt {
-    color: var(--fit-muted);
-    font-size: 12px;
+  margin-bottom: 4px;
+  color: #64748b;
+  font-size: 12px;
 }
 
 .curve-fit-parameters dd {
-    font-size: 14px;
-    font-variant-numeric: tabular-nums;
-    margin: 4px 0 0;
-    overflow-wrap: anywhere;
+  margin: 0;
+  color: #0f172a;
+  font-family:
+    "SFMono-Regular",
+    Consolas,
+    "Liberation Mono",
+    monospace;
+  font-size: 14px;
+  font-weight: 600;
 }
 
-.curve-fit-chart {
-    min-width: 0;
-}
-
-.curve-fit-chart svg {
-    display: block;
-    height: auto;
-    max-width: 100%;
-    width: 100%;
-}
-
-.curve-fit-legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    justify-content: center;
-    margin: 8px 0 4px;
-}
-
-.curve-fit-legend span {
-    align-items: center;
-    display: inline-flex;
-    gap: 6px;
-}
-
-.curve-fit-swatch {
-    display: inline-block;
-    height: 10px;
-    width: 16px;
-}
-
-.curve-fit-swatch-data {
-    background: #ea580c;
-    border-radius: 50%;
-    height: 8px;
-    width: 8px;
-}
-
-.curve-fit-swatch-line {
-    background: #2563eb;
-    height: 3px;
-}
+/* ---------- 指标 ---------- */
 
 .curve-fit-metrics {
-    display: grid;
-    gap: 8px 14px;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    margin: 18px 0 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0 0;
 }
 
-.curve-fit-metrics div {
-    border-top: 1px solid var(--fit-line);
-    padding-top: 8px;
+.curve-fit-metrics > div {
+  min-width: 0;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
 }
 
 .curve-fit-metrics dt {
-    color: var(--fit-muted);
-    font-size: 12px;
+  margin-bottom: 6px;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .curve-fit-metrics dd {
-    font-size: 14px;
-    font-variant-numeric: tabular-nums;
-    margin: 4px 0 0;
-    overflow-wrap: anywhere;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: #0f172a;
+  font-family:
+    "SFMono-Regular",
+    Consolas,
+    "Liberation Mono",
+    monospace;
+  font-size: 14px;
+  font-weight: 650;
 }
+
+/* ---------- 警告 ---------- */
 
 .curve-fit-warnings {
-    color: #92400e;
-    font-size: 13px;
-    margin: 16px 0 0;
-    padding-left: 18px;
+  margin: 14px 0 0;
+  padding: 12px 14px 12px 30px;
+  color: #92400e;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.6;
 }
 
-@media (max-width: 760px) {
-    .curve-fit-layout {
-        grid-template-columns: 1fr;
-    }
+.curve-fit-warnings li + li {
+  margin-top: 4px;
+}
 
-    .curve-fit-heading {
-        align-items: start;
-        flex-direction: column;
-    }
+/* ---------- 响应式 ---------- */
 
-    .curve-fit-metrics,
-    .curve-fit-parameters dl {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+@media (max-width: 1000px) {
+  .curve-fit-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .curve-fit-output {
+    min-height: 0;
+  }
+
+  .curve-fit-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .curve-fit-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .curve-fit-download {
+    width: 100%;
+  }
+
+  .curve-fit-panel {
+    padding: 15px;
+    border-radius: 13px;
+  }
+
+  .curve-fit-parameters dl {
+    grid-template-columns: 1fr;
+  }
+
+  .curve-fit-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .curve-fit-empty {
+    min-height: 260px;
+  }
 }

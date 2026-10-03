@@ -1,29 +1,6 @@
 "use client";
+
 import { CurveFitWorkbench } from "@smart-lab/curve-fit-toolkit";
-import { useMemo, useState } from "react";
-//import "./curve-fit.css";
-type DataRow = {
-    id: number;
-    x: string;
-    y: string;
-};
-
-const initialData: DataRow[] = [
-    { id: 1, x: "0.50", y: "0.10" },
-    { id: 2, x: "1.00", y: "0.20" },
-    { id: 3, x: "1.50", y: "0.30" },
-    { id: 4, x: "2.00", y: "0.40" },
-];
-
-const fitOptions = [
-    "线性拟合",
-    "二次拟合",
-    "指数拟合",
-    "对数拟合",
-    "幂函数拟合",
-];
-
-//import { CurveFitWorkbench } from "@smart-lab/curve-fit-toolkit";
 
 export default function AnalysisPage() {
     return (
@@ -39,7 +16,7 @@ export default function AnalysisPage() {
                     </h1>
 
                     <p className="mt-2 text-sm text-slate-500">
-                        输入实验数据，自由选择拟合方式，快速获得数据分析结果。
+                        独立的数据拟合与分析工具，可直接输入实验数据进行分析。
                     </p>
                 </div>
 

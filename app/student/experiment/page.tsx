@@ -1,13 +1,25 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import {
+    fitCurve,
+    type FitResult,
+} from "@smart-lab/curve-fit-toolkit";
 import { createClient } from "@/lib/supabase/browser";
 
 type DataRow = {
     id: number;
-    voltage: string;
-    current: string;
+    x: string;
+    y: string;
 };
+
+type Point = {
+    x: number;
+    y: number;
+};
+
+type FitModel = "linear" | null;
 
 type Experiment = {
     id: number;
@@ -17,1360 +29,2002 @@ type Experiment = {
     procedure: string | null;
 };
 
-type Tab =
-    | "principle"
-    | "data"
-    | "calculation"
-    | "fitting"
-    | "report"
-    | "submit";
+type Task = {
+    id: number;
+    experiment_id: number;
+    deadline: string | null;
+};
 
-const initialData: DataRow[] = [
-    { id: 1, voltage: "0.50", current: "0.10" },
-    { id: 2, voltage: "1.00", current: "0.20" },
-    { id: 3, voltage: "1.50", current: "0.30" },
-    { id: 4, voltage: "2.00", current: "0.40" },
+type ExperimentConfig = {
+    key: string;
+
+    xLabel: string;
+    yLabel: string;
+
+    xPlaceholder: string;
+    yPlaceholder: string;
+
+    relation: string;
+    formula: string;
+
+    fitModel: FitModel;
+
+    calculationTitle: string;
+    calculationDescription: string;
+
+    deriveLabel?: string;
+    calculationUnit?: string;
+
+    deriveValue?: (x: number, y: number) => number | null;
+
+    sampleData: DataRow[];
+
+    reportDescription: string;
+};
+
+/* =========================================================
+   七个实验配置
+   ========================================================= */
+
+const EXPERIMENT_CONFIGS: ExperimentConfig[] = [
+    {
+        key: "resistance",
+
+        xLabel: "电流 I / A",
+        yLabel: "电压 U / V",
+
+        xPlaceholder: "例如 0.20",
+        yPlaceholder: "例如 1.02",
+
+        relation: "U-I 线性关系",
+        formula: "U = RI + b",
+
+        fitModel: "linear",
+
+        calculationTitle: "电阻计算",
+        calculationDescription:
+            "以电流 I 为横坐标、电压 U 为纵坐标进行线性拟合，拟合直线斜率对应待测电阻。",
+
+        deriveLabel: "单次电阻",
+        calculationUnit: "Ω",
+
+        deriveValue: (x, y) => {
+            if (x === 0) return null;
+            return y / x;
+        },
+
+        sampleData: [
+            { id: 1, x: "0.10", y: "0.50" },
+            { id: 2, x: "0.20", y: "1.00" },
+            { id: 3, x: "0.30", y: "1.50" },
+            { id: 4, x: "0.40", y: "2.00" },
+            { id: 5, x: "0.50", y: "2.50" },
+        ],
+
+        reportDescription:
+            "通过伏安法测量电阻，根据 U-I 数据进行线性拟合，并利用拟合关系分析待测电阻。",
+    },
+
+    {
+        key: "pendulum",
+
+        xLabel: "摆长 L / m",
+        yLabel: "周期平方 T² / s²",
+
+        xPlaceholder: "例如 0.40",
+        yPlaceholder: "例如 1.62",
+
+        relation: "T²-L 线性关系",
+        formula: "T² = (4π²/g)L + b",
+
+        fitModel: "linear",
+
+        calculationTitle: "重力加速度计算",
+        calculationDescription:
+            "将单摆周期平方 T² 与摆长 L 建立线性关系，由拟合直线斜率进一步计算重力加速度。",
+
+        deriveLabel: "T²/L",
+        calculationUnit: "s²/m",
+
+        deriveValue: (x, y) => {
+            if (x === 0) return null;
+            return y / x;
+        },
+
+        sampleData: [
+            { id: 1, x: "0.20", y: "0.81" },
+            { id: 2, x: "0.30", y: "1.22" },
+            { id: 3, x: "0.40", y: "1.62" },
+            { id: 4, x: "0.50", y: "2.03" },
+            { id: 5, x: "0.60", y: "2.43" },
+        ],
+
+        reportDescription:
+            "通过改变单摆摆长并测量对应周期，建立 T²-L 线性关系，由拟合斜率求取重力加速度。",
+    },
+
+    {
+        key: "lens",
+
+        xLabel: "1/u / m⁻¹",
+        yLabel: "1/v / m⁻¹",
+
+        xPlaceholder: "例如 0.50",
+        yPlaceholder: "例如 0.50",
+
+        relation: "1/u-1/v 线性关系",
+        formula: "1/v = -1/u + 1/f",
+
+        fitModel: "linear",
+
+        calculationTitle: "焦距计算",
+        calculationDescription:
+            "根据薄透镜成像关系，将物距和像距倒数进行线性化处理，通过拟合结果分析透镜焦距。",
+
+        deriveLabel: "1/f",
+        calculationUnit: "m⁻¹",
+
+        deriveValue: (x, y) => {
+            return x + y;
+        },
+
+        sampleData: [
+            { id: 1, x: "0.50", y: "0.50" },
+            { id: 2, x: "0.40", y: "0.60" },
+            { id: 3, x: "0.33", y: "0.67" },
+            { id: 4, x: "0.25", y: "0.75" },
+            { id: 5, x: "0.20", y: "0.80" },
+        ],
+
+        reportDescription:
+            "通过测量物距和像距，根据薄透镜成像关系进行线性化拟合，并分析透镜焦距。",
+    },
+
+    {
+        key: "prism",
+
+        xLabel: "顶角 A / °",
+        yLabel: "最小偏向角 δmin / °",
+
+        xPlaceholder: "例如 60",
+        yPlaceholder: "例如 40",
+
+        relation: "棱镜顶角与最小偏向角关系",
+        formula: "n = sin[(A + δmin)/2] / sin(A/2)",
+
+        fitModel: null,
+
+        calculationTitle: "棱镜折射率计算",
+        calculationDescription:
+            "根据棱镜顶角 A 和最小偏向角 δmin，利用最小偏向角公式计算棱镜材料折射率。",
+
+        deriveLabel: "折射率 n",
+
+        deriveValue: (x, y) => {
+            const A = (x * Math.PI) / 180;
+            const delta = (y * Math.PI) / 180;
+
+            const denominator = Math.sin(A / 2);
+
+            if (denominator === 0) {
+                return null;
+            }
+
+            return (
+                Math.sin((A + delta) / 2) /
+                denominator
+            );
+        },
+
+        sampleData: [
+            { id: 1, x: "60", y: "40" },
+            { id: 2, x: "60", y: "40.2" },
+            { id: 3, x: "60", y: "39.8" },
+            { id: 4, x: "60", y: "40.1" },
+        ],
+
+        reportDescription:
+            "通过分光计测量棱镜顶角和最小偏向角，根据最小偏向角公式计算棱镜材料的折射率。",
+    },
+
+    {
+        key: "liquid-crystal",
+
+        xLabel: "电压 U / V",
+        yLabel: "透射光强 I",
+
+        xPlaceholder: "例如 0.50",
+        yPlaceholder: "例如 0.30",
+
+        relation: "透射光强随驱动电压变化",
+        formula: "I = I(U)",
+
+        fitModel: null,
+
+        calculationTitle: "液晶电光效应分析",
+        calculationDescription:
+            "记录不同驱动电压下的透射光强，观察液晶电光效应的变化规律，不强制套用统一拟合模型。",
+
+        sampleData: [
+            { id: 1, x: "0.0", y: "0.10" },
+            { id: 2, x: "1.0", y: "0.16" },
+            { id: 3, x: "2.0", y: "0.28" },
+            { id: 4, x: "3.0", y: "0.47" },
+            { id: 5, x: "4.0", y: "0.68" },
+        ],
+
+        reportDescription:
+            "通过记录不同驱动电压下液晶透射光强的变化，分析液晶材料的电光效应特性。",
+    },
+
+    {
+        key: "meter",
+
+        xLabel: "标准值",
+        yLabel: "被校表读数",
+
+        xPlaceholder: "例如 0.50",
+        yPlaceholder: "例如 0.49",
+
+        relation: "标准值-被校表读数线性关系",
+        formula: "y = kx + b",
+
+        fitModel: "linear",
+
+        calculationTitle: "电表校准分析",
+        calculationDescription:
+            "将标准仪表读数与被校电表读数进行比较，通过校准曲线分析仪表的线性关系和测量误差。",
+
+        deriveLabel: "读数误差",
+
+        deriveValue: (x, y) => {
+            return y - x;
+        },
+
+        sampleData: [
+            { id: 1, x: "0.20", y: "0.19" },
+            { id: 2, x: "0.40", y: "0.39" },
+            { id: 3, x: "0.60", y: "0.59" },
+            { id: 4, x: "0.80", y: "0.79" },
+            { id: 5, x: "1.00", y: "0.98" },
+        ],
+
+        reportDescription:
+            "通过标准仪表与被校电表之间的数据对比，建立校准关系并分析仪表的测量误差。",
+    },
+
+    {
+        key: "viscosity",
+
+        xLabel: "钢球半径平方 r² / m²",
+        yLabel: "终端速度 v / (m·s⁻¹)",
+
+        xPlaceholder: "例如 1.00e-6",
+        yPlaceholder: "例如 0.010",
+
+        relation: "终端速度与半径平方的线性关系",
+        formula:
+            "v = [2(ρs-ρl)g/(9η)]r²",
+
+        fitModel: "linear",
+
+        calculationTitle: "液体粘滞系数分析",
+        calculationDescription:
+            "在满足斯托克斯定律适用条件时，终端速度 v 与钢球半径平方 r² 成线性关系，可由拟合斜率进一步分析粘滞系数。",
+
+        deriveLabel: "v/r²",
+        calculationUnit: "m⁻¹·s⁻¹",
+
+        deriveValue: (x, y) => {
+            if (x === 0) return null;
+            return y / x;
+        },
+
+        sampleData: [
+            { id: 1, x: "1.0e-6", y: "0.0020" },
+            { id: 2, x: "2.0e-6", y: "0.0040" },
+            { id: 3, x: "3.0e-6", y: "0.0060" },
+            { id: 4, x: "4.0e-6", y: "0.0080" },
+            { id: 5, x: "5.0e-6", y: "0.0100" },
+        ],
+
+        reportDescription:
+            "通过测量不同钢球的终端速度，建立终端速度与钢球半径平方之间的关系，并据此分析液体粘滞系数。",
+    },
 ];
 
+/* =========================================================
+   根据实验名称选择配置
+   ========================================================= */
+
+function getExperimentConfig(
+    name: string
+): ExperimentConfig {
+    if (name.includes("伏安法测电阻")) {
+        return EXPERIMENT_CONFIGS[0];
+    }
+
+    if (name.includes("单摆")) {
+        return EXPERIMENT_CONFIGS[1];
+    }
+
+    if (name.includes("薄透镜")) {
+        return EXPERIMENT_CONFIGS[2];
+    }
+
+    if (
+        name.includes("三棱镜") ||
+        name.includes("分光计")
+    ) {
+        return EXPERIMENT_CONFIGS[3];
+    }
+
+    if (name.includes("液晶电光效应")) {
+        return EXPERIMENT_CONFIGS[4];
+    }
+
+    if (name.includes("电表的改装")) {
+        return EXPERIMENT_CONFIGS[5];
+    }
+
+    if (name.includes("落球法")) {
+        return EXPERIMENT_CONFIGS[6];
+    }
+
+    return EXPERIMENT_CONFIGS[0];
+}
+
+/* =========================================================
+   工具函数
+   ========================================================= */
+
+function formatNumber(
+    value: number | null | undefined,
+    digits = 4
+) {
+    if (
+        value === null ||
+        value === undefined ||
+        !Number.isFinite(value)
+    ) {
+        return "—";
+    }
+
+    return Number(value.toFixed(digits)).toString();
+}
+
+function createPoints(
+    rows: DataRow[]
+): Point[] {
+    return rows
+        .map((row) => ({
+            x: Number(row.x),
+            y: Number(row.y),
+        }))
+        .filter(
+            (point) =>
+                Number.isFinite(point.x) &&
+                Number.isFinite(point.y)
+        );
+}
+
+/* =========================================================
+   页面
+   ========================================================= */
+
 export default function ExperimentPage() {
-    const [taskId, setTaskId] = useState<string | null>(null);
-    const supabase = useMemo(() => createClient(), []);
+    const searchParams = useSearchParams();
+    const supabase = createClient();
 
-    const [activeTab, setActiveTab] = useState<Tab>("principle");
-    const [experiment, setExperiment] = useState<Experiment | null>(null);
-    const [experimentLoading, setExperimentLoading] = useState(true);
-    const [experimentError, setExperimentError] = useState("");
+    const [taskId, setTaskId] =
+        useState<number | null>(null);
 
-    const [data, setData] = useState<DataRow[]>(initialData);
+    const [task, setTask] =
+        useState<Task | null>(null);
 
-    const [report, setReport] = useState("");
-    const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+    const [experiment, setExperiment] =
+        useState<Experiment | null>(null);
+
+    const [loading, setLoading] =
+        useState(true);
+
+    const [error, setError] =
+        useState("");
+
+    const [activeTab, setActiveTab] =
+        useState("principle");
+
+    const [data, setData] =
+        useState<DataRow[]>([]);
+
+    const [aiReport, setAiReport] =
+        useState("");
+
+    const [generatingReport, setGeneratingReport] =
+        useState(false);
+
+    const [submitted, setSubmitted] =
+        useState(false);
+
+    /* =======================================================
+      taskId
+      ======================================================= */
 
     useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        setTaskId(params.get("taskId"));
-    }, []);
-
-    useEffect(() => {
-        let cancelled = false;
-
-        async function loadExperiment() {
+        async function resolveTaskId() {
             if (!supabase) {
-                if (!cancelled) {
-                    setExperimentError("Supabase 未配置");
-                    setExperimentLoading(false);
-                }
+                setError("Supabase 未配置");
+                setLoading(false);
                 return;
             }
 
-            if (!taskId) {
-                if (!cancelled) {
-                    setExperimentError("缺少任务 ID，请从任务列表进入实验。");
-                    setExperimentLoading(false);
+            setLoading(true);
+            setError("");
+
+            // ① 如果 URL 已经带 taskId，直接使用
+            const value = searchParams.get("taskId");
+
+            if (value) {
+                const id = Number(value);
+
+                if (!Number.isFinite(id)) {
+                    setError("taskId 无效");
+                    setLoading(false);
+                    return;
                 }
+
+                setTaskId(id);
                 return;
             }
 
-            setExperimentLoading(true);
-            setExperimentError("");
+            // ② 没有 taskId，自动寻找当前学生的第一个未完成任务
 
-            const { data: task, error: taskError } = await supabase
+            const {
+                data: { user },
+                error: userError,
+            } = await supabase.auth.getUser();
+
+            if (userError || !user) {
+                setError("登录状态已失效，请重新登录");
+                setLoading(false);
+                return;
+            }
+
+            // 获取当前学生所在的班级
+            const {
+                data: memberships,
+                error: memberError,
+            } = await supabase
+                .from("class_members")
+                .select("class_id")
+                .eq("student_id", user.id);
+
+            if (
+                memberError ||
+                !memberships ||
+                memberships.length === 0
+            ) {
+                setError("当前学生还没有加入班级");
+                setLoading(false);
+                return;
+            }
+
+            const classIds = memberships.map(
+                (item) => item.class_id
+            );
+
+            // 获取这些班级的实验任务
+            const {
+                data: tasks,
+                error: taskError,
+            } = await supabase
                 .from("tasks")
-                .select("experiment_id")
-                .eq("id", Number(taskId))
-                .single();
+                .select("id, experiment_id, deadline")
+                .in("class_id", classIds)
+                .order("deadline", {
+                    ascending: true,
+                    nullsFirst: false,
+                });
 
-            if (taskError) {
-                console.error("加载任务失败:", taskError);
-                if (!cancelled) {
-                    setExperimentError("加载任务失败：" + taskError.message);
-                    setExperimentLoading(false);
-                }
+            if (
+                taskError ||
+                !tasks ||
+                tasks.length === 0
+            ) {
+                setError("当前没有可用的实验任务");
+                setLoading(false);
                 return;
             }
 
-            const { data: exp, error: experimentError } = await supabase
+            // 获取当前学生自己的实验报告
+            const {
+                data: reports,
+                error: reportError,
+            } = await supabase
+                .from("reports")
+                .select("task_id, status")
+                .eq("student_id", user.id);
+
+            if (reportError) {
+                console.error(
+                    "加载实验报告状态失败：",
+                    reportError
+                );
+
+                setError(
+                    "加载实验完成状态失败：" +
+                    reportError.message
+                );
+
+                setLoading(false);
+                return;
+            }
+
+            // 已经提交/批改完成的任务视为已完成
+            const completedTaskIds = new Set(
+                (reports ?? [])
+                    .filter(
+                        (report) =>
+                            report.status === "submitted" ||
+                            report.status === "graded"
+                    )
+                    .map((report) => report.task_id)
+            );
+
+            // 找到第一个没有提交的任务
+            const firstIncompleteTask = tasks.find(
+                (task) =>
+                    !completedTaskIds.has(task.id)
+            );
+
+            if (!firstIncompleteTask) {
+                setError(
+                    "所有实验任务都已经完成"
+                );
+                setLoading(false);
+                return;
+            }
+
+            setTaskId(firstIncompleteTask.id);
+        }
+
+        resolveTaskId();
+    }, [searchParams, supabase]);
+    /* =======================================================
+       加载任务和实验
+       ======================================================= */
+
+    useEffect(() => {
+        async function loadExperiment() {
+            if (!supabase || !taskId) {
+                return;
+            }
+
+            setLoading(true);
+            setError("");
+
+            const {
+                data: taskData,
+                error: taskError,
+            } = await supabase
+                .from("tasks")
+                .select(
+                    "id, experiment_id, deadline"
+                )
+                .eq("id", taskId)
+                .single();
+
+            if (taskError || !taskData) {
+                console.error(taskError);
+
+                setError(
+                    "加载实验任务失败：" +
+                    (taskError?.message ??
+                        "未找到任务")
+                );
+
+                setLoading(false);
+                return;
+            }
+
+            setTask(taskData as Task);
+
+            const {
+                data: experimentData,
+                error: experimentError,
+            } = await supabase
                 .from("experiments")
-                .select("id, name, principle, key_points, procedure")
-                .eq("id", task.experiment_id)
+                .select(
+                    "id, name, principle, key_points, procedure"
+                )
+                .eq(
+                    "id",
+                    taskData.experiment_id
+                )
                 .single();
 
-            if (experimentError) {
-                console.error("加载实验失败:", experimentError);
-                if (!cancelled) {
-                    setExperimentError("加载实验失败：" + experimentError.message);
-                    setExperimentLoading(false);
-                }
+            if (
+                experimentError ||
+                !experimentData
+            ) {
+                console.error(experimentError);
+
+                setError(
+                    "加载实验信息失败：" +
+                    (experimentError?.message ??
+                        "未找到实验")
+                );
+
+                setLoading(false);
                 return;
             }
 
-            if (!cancelled) {
-                setExperiment(exp as Experiment);
-                setExperimentLoading(false);
-            }
+            setExperiment(
+                experimentData as Experiment
+            );
+
+            setLoading(false);
         }
 
         loadExperiment();
+    }, [taskId, supabase]);
 
-        return () => {
-            cancelled = true;
-        };
-    }, [supabase, taskId]);
+    /* =======================================================
+       当前实验配置
+       ======================================================= */
 
-    const updateRow = (
-        id: number,
-        field: "voltage" | "current",
-        value: string
-    ) => {
-        setData((rows) =>
-            rows.map((row) =>
-                row.id === id ? { ...row, [field]: value } : row
-            )
+    const config = useMemo(() => {
+        return getExperimentConfig(
+            experiment?.name ?? ""
         );
-    };
+    }, [experiment]);
 
-    const addRow = () => {
-        const newId =
-            data.length > 0
-                ? Math.max(...data.map((row) => row.id)) + 1
-                : 1;
+    /* =======================================================
+       根据实验切换示例数据
+       ======================================================= */
 
-        setData([
-            ...data,
-            {
-                id: newId,
-                voltage: "",
-                current: "",
-            },
-        ]);
-    };
-
-    const deleteRow = (id: number) => {
-        setData((rows) => rows.filter((row) => row.id !== id));
-    };
-
-    // 有效数据
-    const validData = useMemo(() => {
-        return data
-            .map((row) => ({
-                u: Number(row.voltage),
-                i: Number(row.current),
+    useEffect(() => {
+        setData(
+            config.sampleData.map((row) => ({
+                ...row,
             }))
-            .filter(
-                (row) =>
-                    Number.isFinite(row.u) &&
-                    Number.isFinite(row.i) &&
-                    row.i !== 0
+        );
+
+        setAiReport("");
+        setSubmitted(false);
+    }, [config.key]);
+
+    /* =======================================================
+       有效数据
+       ======================================================= */
+
+    const validData = useMemo(
+        () => createPoints(data),
+        [data]
+    );
+
+    /* =======================================================
+       调用你的 curve-fit-toolkit
+       ======================================================= */
+
+    const fitResult = useMemo<FitResult | null>(() => {
+        if (
+            config.fitModel === null ||
+            validData.length < 2
+        ) {
+            return null;
+        }
+
+        try {
+            return fitCurve(
+                validData,
+                config.fitModel
             );
-    }, [data]);
+        } catch (error) {
+            console.error(
+                "数据拟合失败：",
+                error
+            );
 
-    // 每组电阻
-    const resistanceValues = useMemo(() => {
-        return validData.map((row) => row.u / row.i);
-    }, [validData]);
+            return null;
+        }
+    }, [
+        validData,
+        config.fitModel,
+    ]);
 
-    // 平均电阻
-    const averageResistance = useMemo(() => {
-        if (resistanceValues.length === 0) {
+    /* =======================================================
+       单组数据计算
+       ======================================================= */
+
+    const calculatedRows = useMemo(() => {
+        if (!config.deriveValue) {
+            return [];
+        }
+
+        return validData.map((point) => ({
+            ...point,
+            value: config.deriveValue!(
+                point.x,
+                point.y
+            ),
+        }));
+    }, [validData, config]);
+
+    /* =======================================================
+       平均计算值
+       ======================================================= */
+
+    const averageValue = useMemo(() => {
+        const values = calculatedRows
+            .map((row) => row.value)
+            .filter(
+                (value): value is number =>
+                    value !== null &&
+                    Number.isFinite(value)
+            );
+
+        if (values.length === 0) {
             return null;
         }
 
         return (
-            resistanceValues.reduce((sum, value) => sum + value, 0) /
-            resistanceValues.length
+            values.reduce(
+                (sum, value) => sum + value,
+                0
+            ) / values.length
         );
-    }, [resistanceValues]);
+    }, [calculatedRows]);
 
-    // 暂时使用前端计算的线性拟合
-    // 后续替换成 C 提供的真实拟合接口
-    const fittingResult = useMemo(() => {
-        if (validData.length < 2) {
-            return null;
+    /* =======================================================
+       数据操作
+       ======================================================= */
+
+    function updateRow(
+        id: number,
+        field: "x" | "y",
+        value: string
+    ) {
+        setData((current) =>
+            current.map((row) =>
+                row.id === id
+                    ? {
+                        ...row,
+                        [field]: value,
+                    }
+                    : row
+            )
+        );
+    }
+
+    function addRow() {
+        setData((current) => [
+            ...current,
+            {
+                id:
+                    current.length > 0
+                        ? Math.max(
+                            ...current.map(
+                                (row) => row.id
+                            )
+                        ) + 1
+                        : 1,
+                x: "",
+                y: "",
+            },
+        ]);
+    }
+
+    function deleteRow(id: number) {
+        setData((current) =>
+            current.filter(
+                (row) => row.id !== id
+            )
+        );
+    }
+
+    /* =======================================================
+       AI 报告
+       ======================================================= */
+
+    async function generateAIReport() {
+        setGeneratingReport(true);
+
+        await new Promise((resolve) =>
+            setTimeout(resolve, 700)
+        );
+
+        const fitText = fitResult
+            ? `本实验采用${fitResult.model}拟合，拟合方程为：${fitResult.equation}。`
+            : "本实验主要依据实验关系和物理公式进行数据分析，不强制采用统一拟合模型。";
+
+        const warningText =
+            fitResult &&
+                fitResult.warnings.length > 0
+                ? `拟合提示：${fitResult.warnings.join(
+                    "；"
+                )}`
+                : "";
+
+        const resultText =
+            averageValue !== null
+                ? `根据当前数据得到的${config.deriveLabel ?? "计算结果"}平均值约为 ${formatNumber(
+                    averageValue
+                )}${config.calculationUnit
+                    ? ` ${config.calculationUnit}`
+                    : ""
+                }。`
+                : "当前数据暂未得到统一的单值计算结果。";
+
+        const report = `
+实验名称：${experiment?.name ?? "未命名实验"}
+
+实验关系：${config.relation}
+
+实验公式：${config.formula}
+
+${config.reportDescription}
+
+本次共录入 ${validData.length} 组有效实验数据。
+
+${fitText}
+
+${resultText}
+
+${warningText}
+
+实验结果应结合实验原理、仪器精度和测量误差进行进一步分析。
+    `.trim();
+
+        setAiReport(report);
+        setGeneratingReport(false);
+    }
+
+    /* =======================================================
+       提交
+       ======================================================= */
+
+    async function handleSubmit() {
+        if (!supabase) {
+            setError("Supabase 未配置");
+            return;
         }
 
-        const n = validData.length;
-
-        const sumX = validData.reduce((sum, row) => sum + row.i, 0);
-        const sumY = validData.reduce((sum, row) => sum + row.u, 0);
-        const sumXY = validData.reduce(
-            (sum, row) => sum + row.i * row.u,
-            0
-        );
-        const sumXX = validData.reduce(
-            (sum, row) => sum + row.i * row.i,
-            0
-        );
-
-        const denominator = n * sumXX - sumX * sumX;
-
-        if (denominator === 0) {
-            return null;
+        if (!taskId) {
+            setError("当前实验任务不存在");
+            return;
         }
 
-        const slope = (n * sumXY - sumX * sumY) / denominator;
-        const intercept = (sumY - slope * sumX) / n;
-
-        const meanY = sumY / n;
-
-        const ssRes = validData.reduce((sum, row) => {
-            const predicted = slope * row.i + intercept;
-            return sum + Math.pow(row.u - predicted, 2);
-        }, 0);
-
-        const ssTot = validData.reduce(
-            (sum, row) => sum + Math.pow(row.u - meanY, 2),
-            0
-        );
-
-        const r2 = ssTot === 0 ? 1 : 1 - ssRes / ssTot;
-
-        return {
-            slope,
-            intercept,
-            r2,
-        };
-    }, [validData]);
-
-    // 拟合图绘制范围
-    const plotData = useMemo(() => {
-        if (!fittingResult || validData.length < 2) {
-            return null;
+        if (validData.length === 0) {
+            setError("请至少录入一组有效实验数据后再提交");
+            return;
         }
 
-        const xs = validData.map((row) => row.i);
-        const ys = validData.map((row) => row.u);
+        try {
+            setError("");
 
-        const minX = Math.min(...xs);
-        const maxX = Math.max(...xs);
-        const minY = Math.min(...ys);
-        const maxY = Math.max(...ys);
+            /* =====================================================
+               1. 获取当前登录学生
+               ===================================================== */
 
-        // 给坐标轴留一点边距
-        const xPadding = (maxX - minX || 1) * 0.12;
-        const yPadding = (maxY - minY || 1) * 0.12;
+            const {
+                data: { user },
+                error: userError,
+            } = await supabase.auth.getUser();
 
-        const xMin = Math.max(0, minX - xPadding);
-        const xMax = maxX + xPadding;
+            if (userError) {
+                throw userError;
+            }
 
-        const yMin = Math.max(0, minY - yPadding);
-        const yMax = maxY + yPadding;
+            if (!user) {
+                setError("登录状态已失效，请重新登录");
+                return;
+            }
 
-        const chartLeft = 90;
-        const chartRight = 840;
-        const chartTop = 50;
-        const chartBottom = 370;
+            /* =====================================================
+               2. 整理原始实验数据
+               ===================================================== */
 
-        const scaleX = (x: number) =>
-            chartLeft +
-            ((x - xMin) / (xMax - xMin || 1)) *
-            (chartRight - chartLeft);
+            const rawData = {
+                rows: data,
+                validData,
+                xLabel: config.xLabel,
+                yLabel: config.yLabel,
+            };
 
-        const scaleY = (y: number) =>
-            chartBottom -
-            ((y - yMin) / (yMax - yMin || 1)) *
-            (chartBottom - chartTop);
+            /* =====================================================
+               3. 整理数据计算结果
+               ===================================================== */
 
-        // 根据真实拟合方程计算拟合线两个端点
-        const fitY1 =
-            fittingResult.slope * xMin +
-            fittingResult.intercept;
+            const calculation = {
+                calculationTitle: config.calculationTitle,
+                formula: config.formula,
+                deriveLabel: config.deriveLabel ?? null,
+                calculationUnit: config.calculationUnit ?? null,
+                calculatedRows,
+                averageValue,
+                fit: fitResult
+                    ? {
+                        model: fitResult.model,
+                        equation: fitResult.equation,
+                        parameters: fitResult.parameters,
+                        metrics: fitResult.metrics,
+                        warnings: fitResult.warnings,
+                    }
+                    : null,
+            };
 
-        const fitY2 =
-            fittingResult.slope * xMax +
-            fittingResult.intercept;
+            /* =====================================================
+               4. 检查当前学生是否已经有这份实验报告
+               ===================================================== */
 
-        return {
-            xMin,
-            xMax,
-            yMin,
-            yMax,
-            chartLeft,
-            chartRight,
-            chartTop,
-            chartBottom,
-            scaleX,
-            scaleY,
-            fitX1: scaleX(xMin),
-            fitY1: scaleY(fitY1),
-            fitX2: scaleX(xMax),
-            fitY2: scaleY(fitY2),
-        };
-    }, [validData, fittingResult]);
+            const {
+                data: existingReport,
+                error: existingReportError,
+            } = await supabase
+                .from("reports")
+                .select("id")
+                .eq("task_id", taskId)
+                .eq("student_id", user.id)
+                .maybeSingle();
 
-    const generateReport = () => {
-        setIsGeneratingReport(true);
-        const dataCount = validData.length;
+            if (existingReportError) {
+                throw existingReportError;
+            }
 
-        const resistanceText =
-            averageResistance !== null
-                ? `${averageResistance.toFixed(4)} Ω`
-                : "暂未计算";
+            /* =====================================================
+               5. 已有报告 → 更新
+               没有报告 → 新建
+               ===================================================== */
 
-        const fittingText =
-            fittingResult !== null
-                ? `U = ${fittingResult.slope.toFixed(4)}I ${fittingResult.intercept >= 0 ? "+" : "-"
-                } ${Math.abs(fittingResult.intercept).toFixed(4)}，R² = ${fittingResult.r2.toFixed(4)}`
-                : "暂未完成拟合";
+            if (existingReport) {
+                const { error: updateError } = await supabase
+                    .from("reports")
+                    .update({
+                        raw_data: rawData,
+                        calculation,
+                        ai_content: aiReport || null,
+                        final_content: aiReport || null,
+                        status: "submitted",
+                    })
+                    .eq("id", existingReport.id)
+                    .eq("student_id", user.id);
 
-        setReport(
-            `一、实验概述
+                if (updateError) {
+                    throw updateError;
+                }
+            } else {
+                const { error: insertError } = await supabase
+                    .from("reports")
+                    .insert({
+                        task_id: taskId,
+                        student_id: user.id,
+                        raw_data: rawData,
+                        calculation,
+                        ai_content: aiReport || null,
+                        final_content: aiReport || null,
+                        status: "submitted",
+                    });
 
-            本实验通过测量金属丝两端的电压和通过金属丝的电流，根据欧姆定律计算金属丝的电阻，并通过实验数据进行线性拟合。
+                if (insertError) {
+                    throw insertError;
+                }
+            }
 
-            二、实验数据
+            /* =====================================================
+               6. 数据库写入成功后，再显示“提交成功”
+               ===================================================== */
 
-            当前共录入 ${dataCount} 组有效实验数据。
+            setSubmitted(true);
 
-            三、数据处理
+        } catch (err) {
+            console.error("提交实验失败：", err);
 
-            根据实验数据计算得到的平均电阻为 ${resistanceText}。
+            if (err instanceof Error) {
+                setError("提交实验失败：" + err.message);
+            } else {
+                setError("提交实验失败，请稍后重试");
+            }
 
-            线性拟合结果为：
+            setSubmitted(false);
+        }
+    }
 
-            ${fittingText}
+    /* =======================================================
+       Loading
+       ======================================================= */
 
-            四、实验分析
-
-            从当前实验数据来看，电压与电流之间具有一定的线性关系。线性拟合结果可以用于进一步分析金属丝的电阻特性。
-
-            五、实验结论
-
-            本实验完成了金属丝电压、电流数据的采集，并进行了电阻计算和线性拟合。后续可结合完整实验参数进一步计算金属丝的电阻率，并对实验误差进行分析。
-            
-            【当前为演示版本】
-            
-            后续将接入 AI 实验导师，根据实验原理、原始数据、计算结果和拟合结果自动生成更加完整的实验报告。`
+    if (loading) {
+        return (
+            <main className="min-h-screen bg-slate-50 p-8">
+                <div className="mx-auto max-w-7xl">
+                    <div className="rounded-2xl bg-white p-8 shadow-sm">
+                        正在加载实验……
+                    </div>
+                </div>
+            </main>
         );
+    }
 
-        setIsGeneratingReport(false);
-    };
+    /* =======================================================
+       Error
+       ======================================================= */
+
+    if (error || !experiment) {
+        return (
+            <main className="min-h-screen bg-slate-50 p-8">
+                <div className="mx-auto max-w-7xl">
+                    <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-600">
+                        {error || "实验不存在"}
+                    </div>
+                </div>
+            </main>
+        );
+    }
+
+    /* =======================================================
+       Tabs
+       ======================================================= */
 
     const tabs = [
-        { id: "principle" as Tab, label: "实验原理" },
-        { id: "data" as Tab, label: "实验数据" },
-        { id: "calculation" as Tab, label: "数据计算" },
-        { id: "fitting" as Tab, label: "拟合曲线" },
-        { id: "report" as Tab, label: "AI实验报告" },
-        { id: "submit" as Tab, label: "提交实验" },
+        {
+            id: "principle",
+            label: "实验原理",
+        },
+        {
+            id: "data",
+            label: "数据记录",
+        },
+        {
+            id: "calculation",
+            label: "数据计算",
+        },
+        {
+            id: "fitting",
+            label: "拟合分析",
+        },
+        {
+            id: "report",
+            label: "AI实验报告",
+        },
+        {
+            id: "submit",
+            label: "提交实验",
+        },
     ];
 
     return (
-        <div className="mx-auto max-w-6xl">
-            {/* 页面标题 */}
-            <div>
-                <div className="flex items-center gap-3">
-                    <h1 className="text-3xl font-bold tracking-tight text-slate-800">
-                        {experimentLoading
-                            ? "正在加载实验..."
-                            : experiment?.name ?? "实验"}
+        <main className="min-h-screen bg-slate-50">
+            <div className="mx-auto max-w-7xl p-6 md:p-8">
+
+                {/* =================================================
+            标题
+            ================================================= */}
+
+                <div className="mb-6">
+                    <div className="text-sm font-medium text-blue-600">
+                        大学物理实验
+                    </div>
+
+                    <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+                        {experiment.name}
                     </h1>
 
-                    <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600">
-                        进行中
-                    </span>
+                    <p className="mt-2 text-sm text-slate-500">
+                        {config.relation}
+                    </p>
                 </div>
 
-                <p className="mt-2 text-sm text-slate-400">
-                    {taskId ? `实验任务 · 任务 #${taskId}` : "实验任务"}
-                </p>
-            </div>
+                {/* =================================================
+            实验信息
+            ================================================= */}
 
-            {/* 功能切换 */}
-            <div className="mt-7 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
-                <div className="flex min-w-max items-center gap-1">
-                    {tabs.map((tab, index) => (
-                        <div key={tab.id} className="flex items-center">
-                            {/* 在不同阶段之间增加分隔线 */}
-                            {(index === 1 || index === 4) && (
-                                <div className="mx-2 h-6 w-px bg-slate-200" />
-                            )}
+                <div className="mb-6 grid gap-4 md:grid-cols-3">
 
-                            <button
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${activeTab === tab.id
-                                    ? "bg-blue-600 text-white shadow-sm"
-                                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
-                                    }`}
-                            >
-                                {tab.label}
-                            </button>
-                        </div>
+                    <InfoCard
+                        title="实验关系"
+                        value={config.relation}
+                    />
+
+                    <InfoCard
+                        title="数据变量"
+                        value={`${config.xLabel} → ${config.yLabel}`}
+                    />
+
+                    <InfoCard
+                        title="数据分析方式"
+                        value={
+                            config.fitModel
+                                ? "线性拟合"
+                                : "实验关系曲线"
+                        }
+                    />
+
+                </div>
+
+                {/* =================================================
+            Tabs
+            ================================================= */}
+
+                <div className="mb-6 flex gap-2 overflow-x-auto rounded-2xl bg-white p-2 shadow-sm">
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.id}
+                            type="button"
+                            onClick={() =>
+                                setActiveTab(tab.id)
+                            }
+                            className={`whitespace-nowrap rounded-xl px-5 py-3 text-sm font-medium transition ${activeTab === tab.id
+                                ? "bg-blue-600 text-white"
+                                : "text-slate-600 hover:bg-slate-100"
+                                }`}
+                        >
+                            {tab.label}
+                        </button>
                     ))}
                 </div>
-            </div>
 
-            {experimentError && (
-                <div className="mt-6 rounded-2xl border border-red-100 bg-red-50 p-5 text-sm text-red-600">
-                    {experimentError}
-                </div>
-            )}
+                {/* =================================================
+            实验原理
+            ================================================= */}
 
-            {/* ================= 实验原理 ================= */}
-            {activeTab === "principle" && (
-                <div className="mt-6 space-y-6">
-                    <section className="rounded-2xl border border-slate-200 bg-white p-7">
-                        <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-sm font-semibold text-blue-600">
-                                01
-                            </div>
+                {activeTab === "principle" && (
+                    <section className="space-y-6">
 
-                            <div>
-                                <h2 className="font-semibold text-slate-800">
-                                    实验目的
-                                </h2>
-                                <p className="mt-1 text-xs text-slate-400">
-                                    本实验需要完成的主要任务
-                                </p>
-                            </div>
-                        </div>
-
-                        <p className="mt-5 whitespace-pre-line text-sm leading-8 text-slate-500">
-                            {experiment?.principle ?? "暂无实验原理"}
-                        </p>
-                    </section>
-
-                    <section className="rounded-2xl border border-slate-200 bg-white p-7">
-                        <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-sm font-semibold text-blue-600">
-                                02
-                            </div>
-
-                            <h2 className="font-semibold text-slate-800">
-                                实验原理
-                            </h2>
-                        </div>
-
-                        <div className="mt-6 rounded-xl bg-slate-50 p-6">
-                            <p className="text-center text-xl font-semibold text-slate-800">
-                                R = U / I
+                        <ContentCard title="实验原理">
+                            <p className="whitespace-pre-wrap leading-8 text-slate-600">
+                                {experiment.principle ||
+                                    "暂无实验原理说明。"}
                             </p>
+                        </ContentCard>
 
-                            <p className="mt-4 text-center text-sm text-slate-500">
-                                其中 U 为金属丝两端电压，I 为通过金属丝的电流。
-                            </p>
-                        </div>
-
-                        {experiment?.key_points && (
-                            <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50/50 p-5">
-                                <p className="text-sm font-medium text-slate-700">
-                                    实验要点
-                                </p>
-                                <p className="mt-3 whitespace-pre-line text-sm leading-7 text-slate-600">
-                                    {experiment.key_points}
-                                </p>
-                            </div>
-                        )}
-
-                        <div className="mt-6">
-                            <p className="text-sm font-medium text-slate-700">
-                                实验步骤
-                            </p>
-
-                            <div className="mt-4 rounded-xl bg-slate-50 p-5">
-                                <p className="whitespace-pre-line text-sm leading-8 text-slate-600">
-                                    {experiment?.procedure ?? "暂无实验步骤"}
-                                </p>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-            )}
-
-            {/* ================= 实验数据 ================= */}
-            {activeTab === "data" && (
-                <div className="mt-6">
-                    <section className="rounded-2xl border border-slate-200 bg-white p-7">
-                        {/* 标题 */}
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                                <div className="flex items-center gap-3">
-                                    <h2 className="font-semibold text-slate-800">
-                                        实验数据
-                                    </h2>
-
-                                    <span className="rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-600">
-                                        {validData.length} 组有效数据
-                                    </span>
+                        <ContentCard title="核心公式">
+                            <div className="rounded-xl bg-slate-50 p-6 text-center">
+                                <div className="text-2xl font-semibold text-slate-900">
+                                    {config.formula}
                                 </div>
+                            </div>
+                        </ContentCard>
 
-                                <p className="mt-1 text-sm text-slate-400">
-                                    输入实验过程中测量得到的电压和电流数据
+                        <ContentCard title="实验要点">
+                            <p className="whitespace-pre-wrap leading-8 text-slate-600">
+                                {experiment.key_points ||
+                                    "暂无实验要点。"}
+                            </p>
+                        </ContentCard>
+
+                        <ContentCard title="实验步骤">
+                            <p className="whitespace-pre-wrap leading-8 text-slate-600">
+                                {experiment.procedure ||
+                                    "暂无实验步骤。"}
+                            </p>
+                        </ContentCard>
+
+                    </section>
+                )}
+
+                {/* =================================================
+            数据记录
+            ================================================= */}
+
+                {activeTab === "data" && (
+                    <ContentCard title="实验数据记录">
+
+                        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+
+                            <div>
+                                <p className="text-sm text-slate-500">
+                                    当前实验数据：
+                                </p>
+
+                                <p className="mt-1 font-medium text-slate-900">
+                                    {config.xLabel} →{" "}
+                                    {config.yLabel}
                                 </p>
                             </div>
 
                             <button
+                                type="button"
                                 onClick={addRow}
-                                className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-medium text-blue-600 transition hover:bg-blue-100"
+                                className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
                             >
                                 + 添加数据
                             </button>
+
                         </div>
 
-                        {/* 数据表 */}
-                        <div className="mt-6 overflow-hidden rounded-xl border border-slate-200">
-                            <table className="w-full text-sm">
-                                <thead className="bg-slate-50">
-                                    <tr>
-                                        <th className="w-20 px-5 py-4 text-left font-medium text-slate-500">
+                        <div className="mt-6 overflow-x-auto">
+                            <table className="w-full min-w-[700px] border-collapse">
+
+                                <thead>
+                                    <tr className="border-b border-slate-200 text-left text-sm text-slate-500">
+
+                                        <th className="px-4 py-3">
                                             序号
                                         </th>
 
-                                        <th className="px-5 py-4 text-left font-medium text-slate-500">
-                                            电压 U
-                                            <span className="ml-1 text-xs text-slate-400">
-                                                / V
-                                            </span>
+                                        <th className="px-4 py-3">
+                                            {config.xLabel}
                                         </th>
 
-                                        <th className="px-5 py-4 text-left font-medium text-slate-500">
-                                            电流 I
-                                            <span className="ml-1 text-xs text-slate-400">
-                                                / A
-                                            </span>
+                                        <th className="px-4 py-3">
+                                            {config.yLabel}
                                         </th>
 
-                                        <th className="w-24 px-5 py-4 text-right font-medium text-slate-500">
+                                        <th className="px-4 py-3">
                                             操作
                                         </th>
+
                                     </tr>
                                 </thead>
 
                                 <tbody>
-                                    {data.map((row, index) => {
-                                        const u = Number(row.voltage);
-                                        const i = Number(row.current);
-
-                                        const valid =
-                                            Number.isFinite(u) &&
-                                            Number.isFinite(i) &&
-                                            row.voltage !== "" &&
-                                            row.current !== "" &&
-                                            i !== 0;
-
-                                        return (
-                                            <tr
-                                                key={row.id}
-                                                className="border-t border-slate-100 transition hover:bg-slate-50/70"
-                                            >
-                                                <td className="px-5 py-4">
-                                                    <span className="text-xs font-semibold text-slate-400">
-                                                        {String(index + 1).padStart(2, "0")}
-                                                    </span>
-                                                </td>
-
-                                                <td className="px-5 py-3">
-                                                    <input
-                                                        value={row.voltage}
-                                                        onChange={(e) =>
-                                                            updateRow(
-                                                                row.id,
-                                                                "voltage",
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        className="w-full max-w-xs rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:bg-white"
-                                                        placeholder="请输入电压"
-                                                    />
-                                                </td>
-
-                                                <td className="px-5 py-3">
-                                                    <input
-                                                        value={row.current}
-                                                        onChange={(e) =>
-                                                            updateRow(
-                                                                row.id,
-                                                                "current",
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        className="w-full max-w-xs rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 outline-none transition placeholder:text-slate-300 focus:border-blue-400 focus:bg-white"
-                                                        placeholder="请输入电流"
-                                                    />
-                                                </td>
-
-                                                <td className="px-5 py-3 text-right">
-                                                    {valid ? (
-                                                        <span className="mr-3 text-xs text-green-500">
-                                                            ✓
-                                                        </span>
-                                                    ) : null}
-
-                                                    <button
-                                                        onClick={() => deleteRow(row.id)}
-                                                        className="text-xs text-slate-400 transition hover:text-red-500"
-                                                    >
-                                                        删除
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* 数据状态 */}
-                        <div className="mt-5 flex items-center gap-3 rounded-xl border border-green-100 bg-green-50 px-4 py-3">
-                            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm text-green-600">
-                                ✓
-                            </div>
-
-                            <div>
-                                <p className="text-sm font-medium text-green-700">
-                                    数据记录正常
-                                </p>
-
-                                <p className="mt-0.5 text-xs text-green-600/80">
-                                    当前共有 {validData.length} 组有效实验数据，可进行后续计算和拟合。
-                                </p>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-            )}
-
-            {/* ================= 数据计算 ================= */}
-            {activeTab === "calculation" && (
-                <div className="mt-6 space-y-6">
-                    <section className="rounded-2xl border border-slate-200 bg-white p-7">
-                        <h2 className="font-semibold text-slate-800">
-                            数据计算
-                        </h2>
-
-                        <p className="mt-1 text-sm text-slate-400">
-                            根据实验数据自动计算每组电阻
-                        </p>
-
-                        <div className="mt-6 overflow-hidden rounded-xl border border-slate-200">
-                            <table className="w-full text-sm">
-                                <thead className="bg-slate-50">
-                                    <tr>
-                                        <th className="px-5 py-4 text-left font-medium text-slate-500">
-                                            序号
-                                        </th>
-                                        <th className="px-5 py-4 text-left font-medium text-slate-500">
-                                            U / V
-                                        </th>
-                                        <th className="px-5 py-4 text-left font-medium text-slate-500">
-                                            I / A
-                                        </th>
-                                        <th className="px-5 py-4 text-left font-medium text-slate-500">
-                                            R / Ω
-                                        </th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    {data.map((row, index) => {
-                                        const u = Number(row.voltage);
-                                        const i = Number(row.current);
-
-                                        const r =
-                                            Number.isFinite(u) &&
-                                                Number.isFinite(i) &&
-                                                i !== 0
-                                                ? u / i
-                                                : null;
-
-                                        return (
-                                            <tr
-                                                key={row.id}
-                                                className="border-t border-slate-100"
-                                            >
-                                                <td className="px-5 py-4 text-slate-500">
-                                                    {index + 1}
-                                                </td>
-
-                                                <td className="px-5 py-4 text-slate-700">
-                                                    {row.voltage || "-"}
-                                                </td>
-
-                                                <td className="px-5 py-4 text-slate-700">
-                                                    {row.current || "-"}
-                                                </td>
-
-                                                <td className="px-5 py-4 font-medium text-blue-600">
-                                                    {r !== null
-                                                        ? r.toFixed(4)
-                                                        : "-"}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    </section>
-
-                    <section className="rounded-2xl border border-blue-100 bg-white p-7">
-                        <p className="text-sm font-medium text-blue-600">
-                            平均结果
-                        </p>
-
-                        <div className="mt-3 flex items-baseline gap-2">
-                            <span className="text-sm text-slate-500">
-                                平均电阻 R =
-                            </span>
-
-                            <span className="text-4xl font-bold text-slate-900">
-                                {averageResistance !== null
-                                    ? averageResistance.toFixed(4)
-                                    : "--"}
-                            </span>
-
-                            <span className="text-sm text-slate-500">
-                                Ω
-                            </span>
-                        </div>
-
-                        <p className="mt-3 text-sm text-slate-400">
-                            根据各组实验数据自动计算。
-                        </p>
-                    </section>
-                </div>
-            )}
-
-            {/* ================= 拟合曲线 ================= */}
-            {activeTab === "fitting" && (
-                <div className="mt-6 space-y-6">
-                    {/* 页面标题 */}
-                    <section className="rounded-2xl border border-slate-200 bg-white p-7">
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                                <div className="flex items-center gap-3">
-                                    <h2 className="text-xl font-semibold text-slate-800">
-                                        拟合曲线
-                                    </h2>
-
-                                    <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600">
-                                        线性拟合
-                                    </span>
-                                </div>
-
-                                <p className="mt-2 text-sm text-slate-400">
-                                    根据当前实验数据自动生成 U-I 拟合曲线
-                                </p>
-                            </div>
-
-                            <div className="rounded-xl bg-slate-50 px-4 py-3">
-                                <p className="text-xs text-slate-400">
-                                    有效数据
-                                </p>
-
-                                <p className="mt-1 text-sm font-semibold text-slate-700">
-                                    {validData.length} 组
-                                </p>
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* 拟合图 */}
-                    <section className="rounded-2xl border border-slate-200 bg-white p-7">
-                        {fittingResult ? (
-                            <>
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <h3 className="font-semibold text-slate-800">
-                                            U-I 关系图
-                                        </h3>
-
-                                        <p className="mt-1 text-xs text-slate-400">
-                                            横轴为电流 I，纵轴为电压 U
-                                        </p>
-                                    </div>
-
-                                    <div className="flex items-center gap-4 text-xs text-slate-400">
-                                        <div className="flex items-center gap-2">
-                                            <span className="h-2.5 w-2.5 rounded-full bg-blue-600" />
-                                            实验数据
-                                        </div>
-
-                                        <div className="flex items-center gap-2">
-                                            <span className="h-0.5 w-5 bg-blue-400" />
-                                            拟合直线
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="mt-6 rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                                    <div className="relative h-[420px] overflow-hidden rounded-xl bg-white">
-                                        <svg
-                                            viewBox="0 0 900 430"
-                                            className="h-full w-full"
-                                            preserveAspectRatio="none"
+                                    {data.map((row, index) => (
+                                        <tr
+                                            key={row.id}
+                                            className="border-b border-slate-100"
                                         >
-                                            {/* 横向网格 */}
-                                            {[0, 1, 2, 3, 4].map((index) => (
-                                                <line
-                                                    key={`horizontal-${index}`}
-                                                    x1="90"
-                                                    y1={50 + index * 80}
-                                                    x2="840"
-                                                    y2={50 + index * 80}
-                                                    stroke="#e2e8f0"
-                                                    strokeWidth="1"
+
+                                            <td className="px-4 py-3 text-sm text-slate-500">
+                                                {index + 1}
+                                            </td>
+
+                                            <td className="px-4 py-3">
+                                                <input
+                                                    value={row.x}
+                                                    onChange={(event) =>
+                                                        updateRow(
+                                                            row.id,
+                                                            "x",
+                                                            event.target.value
+                                                        )
+                                                    }
+                                                    placeholder={
+                                                        config.xPlaceholder
+                                                    }
+                                                    className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-none focus:border-blue-500"
                                                 />
-                                            ))}
+                                            </td>
 
-                                            {/* 纵向网格 */}
-                                            {[0, 1, 2, 3, 4, 5].map((index) => (
-                                                <line
-                                                    key={`vertical-${index}`}
-                                                    x1={90 + index * 150}
-                                                    y1="50"
-                                                    x2={90 + index * 150}
-                                                    y2="370"
-                                                    stroke="#e2e8f0"
-                                                    strokeWidth="1"
+                                            <td className="px-4 py-3">
+                                                <input
+                                                    value={row.y}
+                                                    onChange={(event) =>
+                                                        updateRow(
+                                                            row.id,
+                                                            "y",
+                                                            event.target.value
+                                                        )
+                                                    }
+                                                    placeholder={
+                                                        config.yPlaceholder
+                                                    }
+                                                    className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-none focus:border-blue-500"
                                                 />
-                                            ))}
+                                            </td>
 
-                                            {/* Y轴 */}
-                                            <line
-                                                x1="90"
-                                                y1="50"
-                                                x2="90"
-                                                y2="370"
-                                                stroke="#94a3b8"
-                                                strokeWidth="2"
-                                            />
-
-                                            {/* X轴 */}
-                                            <line
-                                                x1="90"
-                                                y1="370"
-                                                x2="840"
-                                                y2="370"
-                                                stroke="#94a3b8"
-                                                strokeWidth="2"
-                                            />
-
-                                            {/* 数据点 */}
-                                            {plotData &&
-                                                validData.map((row, index) => {
-                                                    const x = plotData.scaleX(row.i);
-                                                    const y = plotData.scaleY(row.u);
-
-                                                    return (
-                                                        <g key={index}>
-                                                            <circle
-                                                                cx={x}
-                                                                cy={y}
-                                                                r="7"
-                                                                fill="#2563eb"
-                                                            />
-
-                                                            <circle
-                                                                cx={x}
-                                                                cy={y}
-                                                                r="11"
-                                                                fill="none"
-                                                                stroke="#bfdbfe"
-                                                                strokeWidth="2"
-                                                            />
-                                                        </g>
-                                                    );
-                                                })}
-
-                                            {/* 拟合线 */}
-                                            {plotData && (
-                                                <line
-                                                    x1={plotData.fitX1}
-                                                    y1={plotData.fitY1}
-                                                    x2={plotData.fitX2}
-                                                    y2={plotData.fitY2}
-                                                    stroke="#60a5fa"
-                                                    strokeWidth="4"
-                                                    strokeLinecap="round"
-                                                />
-                                            )}
-                                            {plotData && (
-                                                <text
-                                                    x="820"
-                                                    y="75"
-                                                    textAnchor="end"
-                                                    fontSize="15"
-                                                    fontWeight="600"
-                                                    fill="#2563eb"
+                                            <td className="px-4 py-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        deleteRow(row.id)
+                                                    }
+                                                    className="text-sm text-red-500 hover:text-red-700"
                                                 >
-                                                    U = {fittingResult.slope.toFixed(4)}I{" "}
-                                                    {fittingResult.intercept >= 0 ? "+" : "-"}{" "}
-                                                    {Math.abs(fittingResult.intercept).toFixed(4)}
-                                                </text>
-                                            )}
+                                                    删除
+                                                </button>
+                                            </td>
 
-                                            {/* X轴数字刻度 */}
-                                            {plotData &&
-                                                Array.from({ length: 5 }).map((_, index) => {
-                                                    const value =
-                                                        plotData.xMin +
-                                                        ((plotData.xMax - plotData.xMin) * index) / 4;
+                                        </tr>
+                                    ))}
+                                </tbody>
 
-                                                    const x = plotData.scaleX(value);
-
-                                                    return (
-                                                        <g key={`x-tick-${index}`}>
-                                                            <line
-                                                                x1={x}
-                                                                y1="370"
-                                                                x2={x}
-                                                                y2="378"
-                                                                stroke="#94a3b8"
-                                                                strokeWidth="1"
-                                                            />
-                                                            <text
-                                                                x={x}
-                                                                y="398"
-                                                                textAnchor="middle"
-                                                                fontSize="12"
-                                                                fill="#64748b"
-                                                            >
-                                                                {value.toFixed(2)}
-                                                            </text>
-                                                        </g>
-                                                    );
-                                                })}
-
-                                            {/* Y轴数字刻度 */}
-                                            {plotData &&
-                                                Array.from({ length: 5 }).map((_, index) => {
-                                                    const value =
-                                                        plotData.yMin +
-                                                        ((plotData.yMax - plotData.yMin) * index) / 4;
-
-                                                    const y = plotData.scaleY(value);
-
-                                                    return (
-                                                        <g key={`y-tick-${index}`}>
-                                                            <line
-                                                                x1="82"
-                                                                y1={y}
-                                                                x2="90"
-                                                                y2={y}
-                                                                stroke="#94a3b8"
-                                                                strokeWidth="1"
-                                                            />
-                                                            <text
-                                                                x="74"
-                                                                y={y + 4}
-                                                                textAnchor="end"
-                                                                fontSize="12"
-                                                                fill="#64748b"
-                                                            >
-                                                                {value.toFixed(2)}
-                                                            </text>
-                                                        </g>
-                                                    );
-                                                })}
-                                            {/* X轴标题 */}
-                                            <text
-                                                x="465"
-                                                y="410"
-                                                textAnchor="middle"
-                                                fontSize="14"
-                                                fill="#64748b"
-                                            >
-                                                电流 I / A
-                                            </text>
-
-                                            {/* Y轴标题 */}
-                                            <text
-                                                x="25"
-                                                y="210"
-                                                textAnchor="middle"
-                                                fontSize="14"
-                                                fill="#64748b"
-                                                transform="rotate(-90 25 210)"
-                                            >
-                                                电压 U / V
-                                            </text>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </>
-                        ) : (
-                            <div className="flex h-[420px] items-center justify-center rounded-2xl bg-slate-50">
-                                <div className="text-center">
-                                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm">
-                                        —
-                                    </div>
-
-                                    <p className="mt-4 text-sm font-medium text-slate-600">
-                                        暂时无法进行拟合
-                                    </p>
-
-                                    <p className="mt-1 text-xs text-slate-400">
-                                        至少需要两组有效实验数据
-                                    </p>
-                                </div>
-                            </div>
-                        )}
-                    </section>
-
-                    {/* 拟合结果 */}
-                    {fittingResult && (
-                        <section>
-                            <div className="mb-4">
-                                <h3 className="font-semibold text-slate-800">
-                                    拟合结果
-                                </h3>
-
-                                <p className="mt-1 text-xs text-slate-400">
-                                    系统根据实验数据计算得到
-                                </p>
-                            </div>
-
-                            <div className="grid gap-4 md:grid-cols-3">
-                                {/* 方程 */}
-                                <div className="rounded-2xl border border-slate-200 bg-white p-6">
-                                    <p className="text-xs font-medium text-slate-400">
-                                        拟合方程
-                                    </p>
-
-                                    <p className="mt-4 text-lg font-semibold text-slate-800">
-                                        U ={" "}
-                                        {fittingResult.slope.toFixed(4)}
-                                        I{" "}
-                                        {fittingResult.intercept >= 0
-                                            ? "+"
-                                            : "-"}{" "}
-                                        {Math.abs(
-                                            fittingResult.intercept
-                                        ).toFixed(4)}
-                                    </p>
-
-                                    <p className="mt-3 text-xs text-slate-400">
-                                        线性模型
-                                    </p>
-                                </div>
-
-                                {/* 斜率 */}
-                                <div className="rounded-2xl border border-slate-200 bg-white p-6">
-                                    <p className="text-xs font-medium text-slate-400">
-                                        斜率
-                                    </p>
-
-                                    <div className="mt-3 flex items-baseline gap-2">
-                                        <span className="text-3xl font-bold text-blue-600">
-                                            {fittingResult.slope.toFixed(4)}
-                                        </span>
-
-                                        <span className="text-sm text-slate-400">
-                                            Ω
-                                        </span>
-                                    </div>
-
-                                    <p className="mt-3 text-xs text-slate-400">
-                                        U-I 曲线斜率对应实验电阻
-                                    </p>
-                                </div>
-
-                                {/* R² */}
-                                <div className="rounded-2xl border border-slate-200 bg-white p-6">
-                                    <p className="text-xs font-medium text-slate-400">
-                                        拟合优度 R²
-                                    </p>
-
-                                    <div className="mt-3 flex items-baseline gap-2">
-                                        <span className="text-3xl font-bold text-blue-600">
-                                            {fittingResult.r2.toFixed(4)}
-                                        </span>
-                                    </div>
-
-                                    <p className="mt-3 text-xs text-slate-400">
-                                        越接近 1 表示线性拟合程度越高
-                                    </p>
-                                </div>
-                            </div>
-                        </section>
-                    )}
-
-                    {/* 数据质量 */}
-                    <section className="rounded-2xl border border-slate-200 bg-white p-6">
-                        <div className="flex items-start gap-4">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-50 text-green-600">
-                                ✓
-                            </div>
-
-                            <div>
-                                <section className="rounded-2xl border border-slate-200 bg-white p-6">
-                                    <div className="flex items-start gap-4">
-                                        <div
-                                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${fittingResult && fittingResult.r2 >= 0.95
-                                                ? "bg-green-50 text-green-600"
-                                                : "bg-amber-50 text-amber-600"
-                                                }`}
-                                        >
-                                            {fittingResult && fittingResult.r2 >= 0.95
-                                                ? "✓"
-                                                : "!"}
-                                        </div>
-
-                                        <div>
-                                            <h3 className="text-sm font-semibold text-slate-800">
-                                                {fittingResult && fittingResult.r2 >= 0.95
-                                                    ? "数据线性相关性良好"
-                                                    : "数据线性相关性较弱"}
-                                            </h3>
-
-                                            <p className="mt-1 text-sm leading-6 text-slate-400">
-                                                当前共有 {validData.length} 组有效实验数据，
-                                                R² ={" "}
-                                                {fittingResult
-                                                    ? fittingResult.r2.toFixed(4)
-                                                    : "--"}
-                                                。
-                                            </p>
-                                        </div>
-                                    </div>
-                                </section>
-
-                                <p className="mt-1 text-sm leading-6 text-slate-400">
-                                    当前共有 {validData.length} 组有效实验数据，
-                                    系统已经完成 U-I 线性拟合。
-                                </p>
-                            </div>
+                            </table>
                         </div>
-                    </section>
-                </div>
-            )}
 
-            {/* ================= AI报告 ================= */}
-            {activeTab === "report" && (
-                <div className="mt-6">
-                    <section className="rounded-2xl border border-slate-200 bg-white p-7">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-lg">✦</span>
+                        <div className="mt-6 rounded-xl bg-blue-50 p-4 text-sm text-blue-700">
+                            当前共有{" "}
+                            <strong>
+                                {validData.length}
+                            </strong>{" "}
+                            组有效数据。
+                        </div>
 
-                                    <h2 className="font-semibold text-slate-800">
-                                        AI 实验报告
-                                    </h2>
+                    </ContentCard>
+                )}
+
+                {/* =================================================
+            数据计算
+            ================================================= */}
+
+                {activeTab === "calculation" && (
+                    <section className="space-y-6">
+
+                        <ContentCard title={config.calculationTitle}>
+
+                            <p className="leading-8 text-slate-600">
+                                {config.calculationDescription}
+                            </p>
+
+                            <div className="mt-5 rounded-xl bg-slate-50 p-5">
+                                <div className="text-sm text-slate-500">
+                                    实验公式
                                 </div>
 
-                                <p className="mt-2 text-sm text-slate-400">
-                                    根据实验目的、步骤、数据和分析结果生成实验报告草稿。
-                                </p>
+                                <div className="mt-2 text-xl font-semibold text-slate-900">
+                                    {config.formula}
+                                </div>
+                            </div>
+
+                        </ContentCard>
+
+                        {config.deriveValue &&
+                            calculatedRows.length > 0 && (
+                                <ContentCard title="数据计算结果">
+
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full min-w-[650px] border-collapse">
+
+                                            <thead>
+                                                <tr className="border-b border-slate-200 text-left text-sm text-slate-500">
+
+                                                    <th className="px-4 py-3">
+                                                        序号
+                                                    </th>
+
+                                                    <th className="px-4 py-3">
+                                                        {config.xLabel}
+                                                    </th>
+
+                                                    <th className="px-4 py-3">
+                                                        {config.yLabel}
+                                                    </th>
+
+                                                    <th className="px-4 py-3">
+                                                        {config.deriveLabel}
+                                                    </th>
+
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                                {calculatedRows.map(
+                                                    (row, index) => (
+                                                        <tr
+                                                            key={index}
+                                                            className="border-b border-slate-100"
+                                                        >
+
+                                                            <td className="px-4 py-3">
+                                                                {index + 1}
+                                                            </td>
+
+                                                            <td className="px-4 py-3">
+                                                                {formatNumber(
+                                                                    row.x
+                                                                )}
+                                                            </td>
+
+                                                            <td className="px-4 py-3">
+                                                                {formatNumber(
+                                                                    row.y
+                                                                )}
+                                                            </td>
+
+                                                            <td className="px-4 py-3 font-medium">
+                                                                {formatNumber(
+                                                                    row.value
+                                                                )}
+                                                                {config.calculationUnit
+                                                                    ? ` ${config.calculationUnit}`
+                                                                    : ""}
+                                                            </td>
+
+                                                        </tr>
+                                                    )
+                                                )}
+                                            </tbody>
+
+                                        </table>
+                                    </div>
+
+                                    <div className="mt-6 rounded-xl bg-green-50 p-5">
+
+                                        <div className="text-sm text-green-700">
+                                            平均结果
+                                        </div>
+
+                                        <div className="mt-2 text-2xl font-bold text-green-800">
+                                            {formatNumber(
+                                                averageValue
+                                            )}
+                                            {config.calculationUnit
+                                                ? ` ${config.calculationUnit}`
+                                                : ""}
+                                        </div>
+
+                                    </div>
+
+                                </ContentCard>
+                            )}
+
+                        {!config.deriveValue && (
+                            <ContentCard title="说明">
+                                <div className="rounded-xl bg-amber-50 p-5 leading-7 text-amber-800">
+                                    本实验主要通过实验关系曲线分析数据，
+                                    不对单组数据强制计算一个统一物理量。
+                                </div>
+                            </ContentCard>
+                        )}
+
+                    </section>
+                )}
+
+                {/* =================================================
+            拟合分析
+            ================================================= */}
+
+                {activeTab === "fitting" && (
+                    <section className="space-y-6">
+
+                        <ContentCard title="拟合分析">
+
+                            <div className="grid gap-4 md:grid-cols-2">
+
+                                <div className="rounded-xl bg-slate-50 p-5">
+                                    <div className="text-sm text-slate-500">
+                                        数据关系
+                                    </div>
+
+                                    <div className="mt-2 font-semibold text-slate-900">
+                                        {config.relation}
+                                    </div>
+                                </div>
+
+                                <div className="rounded-xl bg-slate-50 p-5">
+                                    <div className="text-sm text-slate-500">
+                                        对应公式
+                                    </div>
+
+                                    <div className="mt-2 font-semibold text-slate-900">
+                                        {config.formula}
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </ContentCard>
+
+                        <ContentCard title="实验数据曲线">
+
+                            {validData.length < 2 ? (
+                                <div className="rounded-xl bg-slate-50 p-8 text-center text-slate-500">
+                                    至少需要两组有效数据才能生成曲线。
+                                </div>
+                            ) : (
+                                <DataChart
+                                    points={validData}
+                                    fittedPoints={
+                                        fitResult?.fittedPoints ??
+                                        []
+                                    }
+                                    xLabel={config.xLabel}
+                                    yLabel={config.yLabel}
+                                    showFit={
+                                        fitResult !== null
+                                    }
+                                />
+                            )}
+
+                        </ContentCard>
+
+                        {fitResult && (
+                            <ContentCard title="拟合结果">
+
+                                <div className="grid gap-4 md:grid-cols-2">
+
+                                    <div className="rounded-xl bg-slate-50 p-5">
+                                        <div className="text-sm text-slate-500">
+                                            拟合模型
+                                        </div>
+
+                                        <div className="mt-2 text-lg font-semibold text-slate-900">
+                                            {fitResult.model}
+                                        </div>
+                                    </div>
+
+                                    <div className="rounded-xl bg-slate-50 p-5">
+                                        <div className="text-sm text-slate-500">
+                                            拟合方程
+                                        </div>
+
+                                        <div className="mt-2 text-lg font-semibold text-slate-900">
+                                            {fitResult.equation}
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                {fitResult.warnings.length >
+                                    0 && (
+                                        <div className="mt-5 rounded-xl bg-amber-50 p-5 text-sm leading-7 text-amber-800">
+                                            {fitResult.warnings.map(
+                                                (warning, index) => (
+                                                    <div key={index}>
+                                                        {warning}
+                                                    </div>
+                                                )
+                                            )}
+                                        </div>
+                                    )}
+
+                                <div className="mt-5 rounded-xl bg-blue-50 p-5 text-sm leading-7 text-blue-800">
+                                    {config.key ===
+                                        "resistance" && (
+                                            <>
+                                                伏安法中，U-I 拟合直线的斜率对应待测电阻。
+                                            </>
+                                        )}
+
+                                    {config.key ===
+                                        "pendulum" && (
+                                            <>
+                                                单摆实验中，T²-L 拟合直线的斜率与重力加速度 g 有关。
+                                            </>
+                                        )}
+
+                                    {config.key ===
+                                        "lens" && (
+                                            <>
+                                                薄透镜实验中，通过线性化关系可以进一步由拟合参数分析透镜焦距。
+                                            </>
+                                        )}
+
+                                    {config.key ===
+                                        "meter" && (
+                                            <>
+                                                电表改装实验中，拟合结果用于分析标准值与被校表读数之间的校准关系。
+                                            </>
+                                        )}
+
+                                    {config.key ===
+                                        "viscosity" && (
+                                            <>
+                                                落球法中，终端速度与钢球半径平方之间建立线性关系后，可结合相关物理参数进一步求取粘滞系数。
+                                            </>
+                                        )}
+                                </div>
+
+                            </ContentCard>
+                        )}
+
+                        {!fitResult && (
+                            <ContentCard title="实验关系说明">
+
+                                <div className="rounded-xl bg-amber-50 p-5 leading-7 text-amber-800">
+                                    当前实验不强制使用统一的数学拟合模型。
+                                    上方曲线用于展示实验数据的实际变化关系，
+                                    避免为了生成拟合直线而引入没有物理依据的模型。
+                                </div>
+
+                            </ContentCard>
+                        )}
+
+                    </section>
+                )}
+
+                {/* =================================================
+            AI报告
+            ================================================= */}
+
+                {activeTab === "report" && (
+                    <section className="space-y-6">
+
+                        <ContentCard title="AI 实验报告">
+
+                            <p className="leading-7 text-slate-600">
+                                AI 将根据当前实验名称、实验关系、实验公式、实验数据和分析结果生成实验报告。
+                            </p>
+
+                            <button
+                                type="button"
+                                onClick={generateAIReport}
+                                disabled={generatingReport}
+                                className="mt-6 rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                {generatingReport
+                                    ? "正在生成……"
+                                    : "生成实验报告"}
+                            </button>
+
+                        </ContentCard>
+
+                        {aiReport && (
+                            <ContentCard title="实验报告">
+
+                                <div className="whitespace-pre-wrap rounded-xl bg-slate-50 p-6 leading-8 text-slate-700">
+                                    {aiReport}
+                                </div>
+
+                            </ContentCard>
+                        )}
+
+                    </section>
+                )}
+
+                {/* =================================================
+            提交
+            ================================================= */}
+
+                {activeTab === "submit" && (
+                    <section className="space-y-6">
+
+                        <ContentCard title="提交实验">
+
+                            <p className="leading-7 text-slate-600">
+                                提交前请确认实验数据、数据计算、曲线分析和实验报告均已完成。
+                            </p>
+
+                            <div className="mt-6 grid gap-4 md:grid-cols-3">
+
+                                <StatusCard
+                                    title="有效数据"
+                                    value={`${validData.length} 组`}
+                                />
+
+                                <StatusCard
+                                    title="数据分析"
+                                    value={
+                                        fitResult
+                                            ? "拟合完成"
+                                            : "关系分析完成"
+                                    }
+                                />
+
+                                <StatusCard
+                                    title="AI报告"
+                                    value={
+                                        aiReport
+                                            ? "已生成"
+                                            : "未生成"
+                                    }
+                                />
+
                             </div>
 
                             <button
-                                onClick={generateReport}
-                                disabled={isGeneratingReport}
-                                className={`rounded-xl px-5 py-3 text-sm font-medium text-white transition ${isGeneratingReport
-                                        ? "cursor-not-allowed bg-blue-400"
-                                        : "bg-blue-600 hover:bg-blue-700"
-                                    }`}
+                                type="button"
+                                onClick={handleSubmit}
+                                disabled={submitted}
+                                className="mt-8 rounded-xl bg-green-600 px-6 py-3 font-medium text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                                {isGeneratingReport ? "正在分析..." : "生成报告"}
+                                {submitted ? "已提交" : "提交实验"}
                             </button>
-                        </div>
 
-                        <div className="mt-6 min-h-72 rounded-xl border border-slate-200 bg-slate-50 p-6">
-                            {report ? (
-                                <div className="space-y-5">
-                                    <div className="flex items-center gap-2">
-                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                                            ✦
-                                        </div>
+                        </ContentCard>
 
-                                        <div>
-                                            <p className="text-sm font-semibold text-slate-800">
-                                                AI 实验分析
-                                            </p>
-
-                                            <p className="mt-0.5 text-xs text-slate-400">
-                                                基于当前实验数据生成
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                                        <div className="rounded-xl border border-slate-200 bg-white p-4">
-                                            <p className="text-xs text-slate-400">
-                                                有效数据
-                                            </p>
-                                            <p className="mt-2 text-xl font-semibold text-slate-800">
-                                                {validData.length}
-                                                <span className="ml-1 text-xs font-normal text-slate-400">
-                                                    组
-                                                </span>
-                                            </p>
-                                        </div>
-
-                                        <div className="rounded-xl border border-slate-200 bg-white p-4">
-                                            <p className="text-xs text-slate-400">
-                                                平均电阻
-                                            </p>
-                                            <p className="mt-2 text-xl font-semibold text-slate-800">
-                                                {averageResistance !== null
-                                                    ? averageResistance.toFixed(4)
-                                                    : "--"}
-                                                <span className="ml-1 text-xs font-normal text-slate-400">
-                                                    Ω
-                                                </span>
-                                            </p>
-                                        </div>
-
-                                        <div className="rounded-xl border border-slate-200 bg-white p-4">
-                                            <p className="text-xs text-slate-400">
-                                                拟合斜率
-                                            </p>
-                                            <p className="mt-2 text-xl font-semibold text-slate-800">
-                                                {fittingResult
-                                                    ? fittingResult.slope.toFixed(4)
-                                                    : "--"}
-                                            </p>
-                                        </div>
-
-                                        <div className="rounded-xl border border-slate-200 bg-white p-4">
-                                            <p className="text-xs text-slate-400">
-                                                拟合 R²
-                                            </p>
-                                            <p className="mt-2 text-xl font-semibold text-slate-800">
-                                                {fittingResult
-                                                    ? fittingResult.r2.toFixed(4)
-                                                    : "--"}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    {fittingResult && (
-                                        <div
-                                            className={`rounded-xl border p-4 ${fittingResult.r2 >= 0.95
-                                                ? "border-green-200 bg-green-50"
-                                                : "border-amber-200 bg-amber-50"
-                                                }`}
-                                        >
-                                            <div className="flex items-start gap-3">
-                                                <div
-                                                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${fittingResult.r2 >= 0.95
-                                                        ? "bg-green-100 text-green-600"
-                                                        : "bg-amber-100 text-amber-600"
-                                                        }`}
-                                                >
-                                                    {fittingResult.r2 >= 0.95 ? "✓" : "!"}
-                                                </div>
-
-                                                <div>
-                                                    <p
-                                                        className={`text-sm font-semibold ${fittingResult.r2 >= 0.95
-                                                            ? "text-green-700"
-                                                            : "text-amber-700"
-                                                            }`}
-                                                    >
-                                                        {fittingResult.r2 >= 0.95
-                                                            ? "数据线性相关性良好"
-                                                            : "建议检查实验数据"}
-                                                    </p>
-
-                                                    <p className="mt-1 text-xs leading-5 text-slate-500">
-                                                        {fittingResult.r2 >= 0.95
-                                                            ? "当前拟合结果具有较好的线性相关性，可以继续进行实验结果分析。"
-                                                            : "当前拟合结果的线性相关性较弱，建议检查原始数据及实验操作。"}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                    <div className="rounded-xl border border-slate-200 bg-white p-5">
-                                        <p className="whitespace-pre-line text-sm leading-8 text-slate-600">
-                                            {report}
-                                        </p>
-                                    </div>
+                        {submitted && (
+                            <div className="rounded-2xl border border-green-200 bg-green-50 p-6 text-green-800">
+                                <div className="font-semibold">
+                                    实验提交成功
                                 </div>
-                            ) : (
-                                <div className="flex min-h-60 items-center justify-center text-sm text-slate-400">
-                                    点击右上角“生成报告”，AI
-                                    将根据当前实验数据生成报告。
+
+                                <div className="mt-2 text-sm">
+                                    当前实验数据、分析和报告已经完成提交流程。
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        )}
+
                     </section>
-                </div>
-            )}
+                )}
 
-            {/* ================= 提交实验 ================= */}
-            {activeTab === "submit" && (
-                <div className="mt-6 space-y-6">
-                    <section className="rounded-2xl border border-slate-200 bg-white p-7">
-                        <h2 className="font-semibold text-slate-800">
-                            实验完成情况
-                        </h2>
+            </div>
+        </main>
+    );
+}
 
-                        <p className="mt-1 text-sm text-slate-400">
-                            提交实验前，请确认各项内容已经完成。
-                        </p>
+/* =========================================================
+   信息卡
+   ========================================================= */
 
-                        <div className="mt-6 space-y-3">
-                            {[
-                                [
-                                    "实验数据",
-                                    validData.length >= 2,
-                                    `已录入 ${validData.length} 组有效数据`,
-                                ],
-                                [
-                                    "数据计算",
-                                    averageResistance !== null,
-                                    "电阻计算完成",
-                                ],
-                                [
-                                    "拟合曲线",
-                                    fittingResult !== null,
-                                    "线性拟合完成",
-                                ],
-                                [
-                                    "AI实验报告",
-                                    report !== "",
-                                    "实验报告已生成",
-                                ],
-                            ].map(([title, completed, description]) => (
-                                <div
-                                    key={String(title)}
-                                    className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-5 py-4"
-                                >
-                                    <div>
-                                        <p className="text-sm font-medium text-slate-700">
-                                            {title}
-                                        </p>
+function InfoCard({
+    title,
+    value,
+}: {
+    title: string;
+    value: string;
+}) {
+    return (
+        <div className="rounded-2xl bg-white p-5 shadow-sm">
+            <div className="text-sm text-slate-500">
+                {title}
+            </div>
 
-                                        <p className="mt-1 text-xs text-slate-400">
-                                            {description}
-                                        </p>
-                                    </div>
+            <div className="mt-2 font-semibold text-slate-900">
+                {value}
+            </div>
+        </div>
+    );
+}
 
-                                    <span
-                                        className={`rounded-full px-3 py-1 text-xs font-medium ${completed
-                                            ? "bg-green-50 text-green-600"
-                                            : "bg-slate-100 text-slate-400"
-                                            }`}
-                                    >
-                                        {completed ? "已完成" : "未完成"}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
+/* =========================================================
+   内容卡
+   ========================================================= */
 
-                    <section className="rounded-2xl border border-blue-100 bg-white p-7">
-                        <h2 className="font-semibold text-slate-800">
-                            提交实验
-                        </h2>
+function ContentCard({
+    title,
+    children,
+}: {
+    title: string;
+    children: React.ReactNode;
+}) {
+    return (
+        <div className="rounded-2xl bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-semibold text-slate-900">
+                {title}
+            </h2>
 
-                        <p className="mt-2 text-sm leading-6 text-slate-400">
-                            提交后，实验数据和实验报告将进入教师端，供教师查看和批阅。
-                        </p>
+            <div className="mt-5">
+                {children}
+            </div>
+        </div>
+    );
+}
 
-                        <button
-                            onClick={() =>
-                                alert("提交功能将在连接 Supabase 后接入")
-                            }
-                            className="mt-6 w-full rounded-xl bg-blue-600 py-3.5 text-sm font-medium text-white transition hover:bg-blue-700"
-                        >
-                            提交实验
-                        </button>
-                    </section>
-                </div>
-            )}
+/* =========================================================
+   状态卡
+   ========================================================= */
+
+function StatusCard({
+    title,
+    value,
+}: {
+    title: string;
+    value: string;
+}) {
+    return (
+        <div className="rounded-xl bg-slate-50 p-5">
+            <div className="text-sm text-slate-500">
+                {title}
+            </div>
+
+            <div className="mt-2 text-lg font-semibold text-slate-900">
+                {value}
+            </div>
+        </div>
+    );
+}
+
+/* =========================================================
+   SVG 曲线
+   ========================================================= */
+
+function DataChart({
+    points,
+    fittedPoints,
+    xLabel,
+    yLabel,
+    showFit,
+}: {
+    points: Point[];
+    fittedPoints: Point[];
+    xLabel: string;
+    yLabel: string;
+    showFit: boolean;
+}) {
+    const width = 900;
+    const height = 460;
+
+    const paddingLeft = 80;
+    const paddingRight = 40;
+    const paddingTop = 40;
+    const paddingBottom = 70;
+
+    const plotWidth =
+        width -
+        paddingLeft -
+        paddingRight;
+
+    const plotHeight =
+        height -
+        paddingTop -
+        paddingBottom;
+
+    const allPoints = [
+        ...points,
+        ...(showFit ? fittedPoints : []),
+    ];
+
+    const xs = allPoints.map(
+        (point) => point.x
+    );
+
+    const ys = allPoints.map(
+        (point) => point.y
+    );
+
+    let minX = Math.min(...xs);
+    let maxX = Math.max(...xs);
+    let minY = Math.min(...ys);
+    let maxY = Math.max(...ys);
+
+    if (minX === maxX) {
+        minX -= 1;
+        maxX += 1;
+    }
+
+    if (minY === maxY) {
+        minY -= 1;
+        maxY += 1;
+    }
+
+    const xRange = maxX - minX;
+    const yRange = maxY - minY;
+
+    function xToSvg(x: number) {
+        return (
+            paddingLeft +
+            ((x - minX) / xRange) *
+            plotWidth
+        );
+    }
+
+    function yToSvg(y: number) {
+        return (
+            paddingTop +
+            plotHeight -
+            ((y - minY) / yRange) *
+            plotHeight
+        );
+    }
+
+    return (
+        <div className="overflow-x-auto">
+            <svg
+                viewBox={`0 0 ${width} ${height}`}
+                className="h-auto w-full min-w-[760px]"
+            >
+                {/* 网格 */}
+                <line
+                    x1={paddingLeft}
+                    y1={paddingTop}
+                    x2={paddingLeft}
+                    y2={
+                        height -
+                        paddingBottom
+                    }
+                    stroke="currentColor"
+                    className="text-slate-300"
+                />
+
+                <line
+                    x1={paddingLeft}
+                    y1={
+                        height -
+                        paddingBottom
+                    }
+                    x2={
+                        width -
+                        paddingRight
+                    }
+                    y2={
+                        height -
+                        paddingBottom
+                    }
+                    stroke="currentColor"
+                    className="text-slate-300"
+                />
+
+                {/* 拟合曲线 */}
+                {showFit &&
+                    fittedPoints.length >= 2 && (
+                        <polyline
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            className="text-blue-500"
+                            points={fittedPoints
+                                .map(
+                                    (point) =>
+                                        `${xToSvg(
+                                            point.x
+                                        )},${yToSvg(
+                                            point.y
+                                        )}`
+                                )
+                                .join(" ")}
+                        />
+                    )}
+
+                {/* 实验数据 */}
+                {points.map(
+                    (point, index) => (
+                        <circle
+                            key={index}
+                            cx={xToSvg(point.x)}
+                            cy={yToSvg(point.y)}
+                            r="6"
+                            fill="currentColor"
+                            className="text-slate-800"
+                        />
+                    )
+                )}
+
+                {/* X轴标题 */}
+                <text
+                    x={width / 2}
+                    y={height - 20}
+                    textAnchor="middle"
+                    className="fill-slate-600 text-sm"
+                >
+                    {xLabel}
+                </text>
+
+                {/* Y轴标题 */}
+                <text
+                    x="20"
+                    y={height / 2}
+                    textAnchor="middle"
+                    transform={`rotate(-90 20 ${height / 2
+                        })`}
+                    className="fill-slate-600 text-sm"
+                >
+                    {yLabel}
+                </text>
+
+                {/* X最小值 */}
+                <text
+                    x={paddingLeft}
+                    y={
+                        height -
+                        paddingBottom +
+                        25
+                    }
+                    className="fill-slate-400 text-xs"
+                >
+                    {formatNumber(minX)}
+                </text>
+
+                {/* X最大值 */}
+                <text
+                    x={
+                        width -
+                        paddingRight
+                    }
+                    y={
+                        height -
+                        paddingBottom +
+                        25
+                    }
+                    textAnchor="end"
+                    className="fill-slate-400 text-xs"
+                >
+                    {formatNumber(maxX)}
+                </text>
+
+                {/* Y最大值 */}
+                <text
+                    x={paddingLeft - 10}
+                    y={paddingTop}
+                    textAnchor="end"
+                    className="fill-slate-400 text-xs"
+                >
+                    {formatNumber(maxY)}
+                </text>
+
+                {/* Y最小值 */}
+                <text
+                    x={paddingLeft - 10}
+                    y={
+                        height -
+                        paddingBottom
+                    }
+                    textAnchor="end"
+                    className="fill-slate-400 text-xs"
+                >
+                    {formatNumber(minY)}
+                </text>
+            </svg>
         </div>
     );
 }
