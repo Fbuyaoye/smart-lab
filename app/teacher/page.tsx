@@ -7,7 +7,8 @@ export default async function TeacherDashboardPage() {
   const supabase = createClient(); let classCount = 0; let taskCount = 0; let pendingCount = 0; let setupMessage = "";
   if (!supabase) setupMessage = "数据库尚未连接。配置 .env.local 并执行 supabase/migrations/001_init.sql 后即可看到真实数据。";
   else {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user ?? null;
     if (user) {
       const [classes,tasks,reports] = await Promise.all([
         supabase.from("classes").select("id",{ count:"exact", head:true }).eq("teacher_id",user.id),

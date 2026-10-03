@@ -16,13 +16,35 @@ export async function middleware(request: NextRequest) {
       },
     },
   });
-  await supabase.auth.getUser();
+  function loginRedirect(reason: string) {
+    const redirect = NextResponse.redirect(new URL(`/teacher/login?error=${reason}`, request.url));
+    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+    return redirect;
+  }
   const isTeacherRoute = request.nextUrl.pathname.startsWith("/teacher") && request.nextUrl.pathname !== "/teacher/login";
   if (isTeacherRoute) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.redirect(new URL("/teacher/login", request.url));
-    const { data: isTeacher } = await supabase.rpc("is_teacher");
-    if (!isTeacher) return NextResponse.redirect(new URL("/teacher/login?error=teacher-only", request.url));
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return loginRedirect("session-missing");
+      // app_metadata is written by an administrator and is carried in the
+      // freshly issued JWT. Avoid an extra remote auth call immediately after
+      // login; database RLS still enforces this role on every query.
+      if (session.user.app_metadata?.role === "teacher") return response;
+
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError && authError.name !== "AuthSessionMissingError") {
+        return loginRedirect("auth-check-failed");
+      } else if (!user) {
+        return loginRedirect("session-missing");
+      }
+      const { data: isTeacher, error: roleError } = await supabase.rpc("is_teacher");
+      if (roleError) {
+        return loginRedirect("role-check-failed");
+      }
+      if (!isTeacher) return loginRedirect("teacher-only");
+    } catch {
+      return loginRedirect("auth-check-failed");
+    }
   }
   return response;
 }
