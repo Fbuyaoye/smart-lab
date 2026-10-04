@@ -8,7 +8,7 @@
 - 实验原理、操作步骤、误差分析、数据处理与报告表达四类快捷问题。
 - 多轮对话历史，提交时最多发送最近 10 条消息。
 - 发送中、服务异常、清空对话和字符限制状态。
-- 浏览器端只调用项目自己的 `/api/ai/qa`，不会包含 DeepSeek Key。
+- 浏览器端只调用项目自己的 `/api/ai/qa`，不会包含 GLM 密钥或服务间令牌。
 
 ## 预览
 
@@ -29,19 +29,24 @@ import { AssistantWorkbench } from "@smart-lab/ai-assistant-toolkit";
 
 export default function KnowledgeQaPage() {
   return (
-    <AssistantWorkbench
-      experimentId={task.experiment.id}
-      experimentName={task.experiment.name}
-    />
+    <AssistantWorkbench experimentName="通用物理实验问答" />
   );
 }
+```
+
+在具体实验页面传入实验信息即可限定知识库范围：
+
+```tsx
+<AssistantWorkbench
+  experimentId={task.experiment.id}
+  experimentName={task.experiment.name}
+/>
 ```
 
 默认调用同域的 `POST /api/ai/qa`，请求格式：
 
 ```json
 {
-  "experimentId": "real-experiment-id",
   "question": "如何判断数据异常？",
   "history": [
     { "role": "assistant", "content": "..." },
@@ -49,6 +54,8 @@ export default function KnowledgeQaPage() {
   ]
 }
 ```
+
+`experimentId` 为可选字段：省略时会从全部实验资料中检索；传入时只检索对应实验。
 
 接口需返回：
 
@@ -58,7 +65,7 @@ export default function KnowledgeQaPage() {
 
 ## 服务端转发示例
 
-Next.js 项目应在服务端转发到独立 AI 服务，令牌和 DeepSeek Key 均不可传给浏览器：
+Next.js 项目应在服务端转发到独立 AI 服务，GLM 密钥和服务间令牌均不可传给浏览器：
 
 ```ts
 // app/api/ai/qa/route.ts
@@ -78,4 +85,4 @@ export async function POST(request: Request) {
 }
 ```
 
-在 `smart-lab-ai-service` 中登记真实实验的知识库规格后，`/v1/ai/qa` 才会回答。这样 AI 只能基于当前实验资料回答，而不是凭空编造。
+`/v1/ai/qa` 已支持通用和实验限定两种模式。知识库中需要持续导入经教师审核的指导书内容，AI 才能基于资料回答，而不是凭空编造。

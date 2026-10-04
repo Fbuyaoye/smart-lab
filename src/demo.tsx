@@ -9,6 +9,6 @@ const demoAsk: AskAssistant = async ({ question }) => {
 
 createRoot(document.getElementById("root")!).render(
   <main style={{ background: "#f6f8fc", minHeight: "100vh", padding: "34px clamp(20px, 4vw, 56px)" }}>
-    <AssistantWorkbench experimentId="demo" experimentName="当前实验：待接入真实实验任务" ask={demoAsk} />
+    <AssistantWorkbench experimentName="通用物理实验问答（演示）" ask={demoAsk} />
   </main>,
 );

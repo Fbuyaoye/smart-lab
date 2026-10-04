@@ -8,8 +8,9 @@ import {
 import "./assistant.css";
 
 export type AssistantWorkbenchProps = {
-  experimentId: string;
-  experimentName: string;
+  /** 传入时限定检索当前实验；省略时从整个知识库检索。 */
+  experimentId?: string;
+  experimentName?: string;
   ask?: AskAssistant;
   quickQuestions?: string[];
   initialMessage?: string;
@@ -28,7 +29,7 @@ function makeMessage(role: AssistantMessage["role"], content: string): Assistant
 
 export function AssistantWorkbench({
   experimentId,
-  experimentName,
+  experimentName = "通用物理实验问答",
   ask = createQaClient(),
   quickQuestions = DEFAULT_QUESTIONS,
   initialMessage = "你好，我是 AI 实验助教。你可以问我实验原理、操作步骤、数据处理和误差分析相关的问题。",

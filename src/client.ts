@@ -8,7 +8,7 @@ export type AssistantMessage = {
 };
 
 export type AskAssistantInput = {
-  experimentId: string;
+  experimentId?: string;
   question: string;
   history: Array<Pick<AssistantMessage, "role" | "content">>;
 };
