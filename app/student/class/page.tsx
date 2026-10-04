@@ -11,73 +11,101 @@ type ClassInfo = {
 
 export default function ClassPage() {
     const [classInfo, setClassInfo] = React.useState<ClassInfo | null>(null);
+    const [teacherName, setTeacherName] = React.useState("");
     const [inviteCode, setInviteCode] = React.useState("");
     const [loading, setLoading] = React.useState(true);
     const [joining, setJoining] = React.useState(false);
     const [error, setError] = React.useState("");
     const [message, setMessage] = React.useState("");
 
-    React.useEffect(() => {
-        async function loadClass() {
-            const supabase = createClient();
+    async function loadClass() {
+        const supabase = createClient();
 
-            if (!supabase) {
-                setError("Supabase 未配置");
+        if (!supabase) {
+            setError("Supabase 未配置");
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const {
+                data: { user },
+                error: authError,
+            } = await supabase.auth.getUser();
+
+            if (authError) throw authError;
+
+            if (!user) {
+                setError("当前没有登录用户");
                 setLoading(false);
                 return;
             }
 
-            try {
-                // 获取当前登录学生
-                const {
-                    data: { user },
-                    error: authError,
-                } = await supabase.auth.getUser();
-
-                if (authError) throw authError;
-
-                if (!user) {
-                    setError("当前没有登录用户");
-                    setLoading(false);
-                    return;
-                }
-
-                // 查询当前学生加入的班级
-                const { data, error: classError } = await supabase
-                    .from("class_members")
-                    .select(
-                        "class_id, classes(id, name, teacher_id)"
+            const { data, error: classError } = await supabase
+                .from("class_members")
+                .select(`
+                    class_id,
+                    classes(
+                        id,
+                        name,
+                        teacher_id
                     )
-                    .eq("student_id", user.id);
+                `)
+                .eq("student_id", user.id);
 
-                if (classError) throw classError;
+            if (classError) throw classError;
 
-                if (!data || data.length === 0) {
-                    setClassInfo(null);
-                    setLoading(false);
-                    return;
-                }
+            console.log("班级原始数据：", data);
 
-                const firstClass = data[0].classes;
-
-                if (Array.isArray(firstClass)) {
-                    setClassInfo(firstClass[0] ?? null);
-                } else {
-                    setClassInfo(firstClass ?? null);
-                }
-            } catch (err) {
-                console.error("加载班级失败:", err);
-
-                if (err instanceof Error) {
-                    setError("加载班级失败：" + err.message);
-                } else {
-                    setError("加载班级失败");
-                }
-            } finally {
+            if (!data || data.length === 0) {
+                setClassInfo(null);
                 setLoading(false);
+                return;
             }
-        }
 
+            const firstClass = data[0].classes;
+
+            const currentClass = Array.isArray(firstClass)
+                ? firstClass[0]
+                : firstClass;
+
+            if (!currentClass) {
+                setClassInfo(null);
+                setLoading(false);
+                return;
+            }
+
+            setClassInfo(currentClass);
+
+            if (currentClass.teacher_id) {
+                const { data: teacher, error: teacherError } = await supabase
+                    .from("users")
+                    .select("name")
+                    .eq("id", currentClass.teacher_id);
+
+                console.log("教师查询结果：", teacher);
+                console.log("教师查询错误：", teacherError);
+                if (teacherError) {
+                    console.error("查询教师姓名失败：", teacherError);
+                    setTeacherName("");
+                } else {
+                    setTeacherName(teacher[0]?.name ?? "");
+                }
+            }
+        } catch (err) {
+            console.error("加载班级失败:", err);
+
+            if (err instanceof Error) {
+                setError("加载班级失败：" + err.message);
+            } else {
+                setError("加载班级失败");
+            }
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    React.useEffect(() => {
         loadClass();
     }, []);
 
@@ -116,30 +144,8 @@ export default function ClassPage() {
             setInviteCode("");
 
             // 重新读取班级
-            const {
-                data: { user },
-            } = await supabase.auth.getUser();
-
-            if (!user) return;
-
-            const { data, error: classError } = await supabase
-                .from("class_members")
-                .select(
-                    "class_id, classes(id, name, teacher_id)"
-                )
-                .eq("student_id", user.id);
-
-            if (classError) throw classError;
-
-            if (data && data.length > 0) {
-                const firstClass = data[0].classes;
-
-                if (Array.isArray(firstClass)) {
-                    setClassInfo(firstClass[0] ?? null);
-                } else {
-                    setClassInfo(firstClass ?? null);
-                }
-            }
+            setLoading(true);
+            await loadClass();
         } catch (err) {
             console.error("加入班级异常:", err);
 
@@ -155,7 +161,9 @@ export default function ClassPage() {
 
     return (
         <main className="min-h-screen bg-zinc-100 p-8">
-            <h1 className="text-3xl font-bold text-slate-800">我的班级</h1>
+            <h1 className="text-3xl font-bold text-slate-800">
+                我的班级
+            </h1>
 
             {loading && (
                 <div className="mt-6 rounded-2xl bg-white p-6 shadow">
@@ -178,7 +186,8 @@ export default function ClassPage() {
                     </h2>
 
                     <p className="mt-2 text-zinc-600">
-                        任课教师：{classInfo.teacher_id || "暂未设置"}
+                        任课教师：
+                        {teacherName || classInfo.teacher_id || "暂未设置"}
                     </p>
 
                     <p className="mt-4 text-slate-700">
