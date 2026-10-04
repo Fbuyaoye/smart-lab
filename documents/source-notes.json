@@ -1,0 +1,206 @@
+[
+  {
+    "experimentId": "air-specific-heat-ratio",
+    "status": "待教师审核",
+    "sources": [
+      {"institution":"四川大学","url":"https://physics.lab.scu.edu.cn/uploads/1/file/public/201810/20181018095929_pccxdom7mt.pdf","scope":"空气比热容比资料"},
+      {"institution":"长江大学","url":"https://shuxue.yangtzeu.edu.cn/__local/1/35/A5/B05973F0D0CE2CDFBD1F26162F2_8F5E7DB9_3F6D6D.pdf","scope":"合并讲义"}
+    ],
+    "notes": ["已收录资料来源，等待导入本校指导书中的实验原理、步骤、原始数据字段和计算公式。"],
+    "detectionRules": []
+  },
+  {
+    "experimentId": "photoelectric-effect",
+    "status": "待教师审核",
+    "sources": [
+      {"institution":"海南大学物理实验教学中心","url":"https://jxpt.hainanu.edu.cn/meol/analytics/resPdfShow.do?resId=242618&lid=47745","scope":"ZKY-GD-4 智能光电效应实验仪、光电效应规律、爱因斯坦方程、截止电压与频率关系、普朗克常数测量原理"},
+      {"institution":"山东大学物理实验中心","url":"https://www.phylab.sdu.edu.cn/shiyanbaguangdianxiaoyingcedingpulangkechangshufangzhenshiyan.pdf","scope":"验证爱因斯坦方程、截止电压与频率线性关系、光电管伏安特性"},
+      {"institution":"电子科技大学","url":"https://study.uestc.edu.cn/wlxt/ncourse/exp/web/jpkc/lanmu8/教材库/大学物理实验_基础和综合分册/32光电效应法测普朗克常数实验.pdf","scope":"光电效应法测普朗克常数"}
+    ],
+    "notes": ["重点资料：光电效应规律、爱因斯坦方程、截止电压与频率的关系、光电管伏安特性、普朗克常数测量原理。", "检测重点：频率与截止电压的配对是否完整；拟合模型是否为指导书指定关系；单位、斜率与截距解释是否与指导书一致。"],
+    "detectionRules": [{"type":"required-field","fields":["frequency","stoppingVoltage"],"source":"海南大学/山东大学资料摘要"},{"type":"minimum-rows","minimum":3,"source":"用于频率-截止电压拟合，具体数量以本校指导书为准"}]
+  },
+  {
+    "experimentId": "oscilloscope",
+    "status": "待教师审核",
+    "sources": [
+      {"institution":"哈尔滨师范大学","url":"http://exp.hrbnu.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1349863670&wbfileid=87D8D9EBCA5C33DE8698AF16F671F6FF","scope":"示波器使用资料"},
+      {"institution":"山东大学","url":"https://www.phylab.sdu.edu.cn/shiyanqishiboqideyuanliyushiyong.pdf","scope":"示波器原理与使用"}
+    ],
+    "notes": ["该实验用于示波器原理和操作学习。待导入本校仪器型号、探头倍率、量程与操作步骤后，AI 才可对具体设置作答。"],
+    "detectionRules": []
+  },
+  {
+    "experimentId": "liquid-crystal-electro-optic",
+    "status": "待教师审核",
+    "sources": [
+      {"institution":"郑州大学/高等教育出版社平台","url":"http://node2d-public.hep.com.cn/b1981d4e9228a0963e7f5d71a2a0bda3.pdf","scope":"实验背景、目的、原理、仪器、步骤、注意事项"},
+      {"institution":"中央民族大学理学院","url":"https://lxy.muc.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1750937748&wbfileid=45E02AA358D0CDE950C70B663E30D76C","scope":"TN 型液晶光开关、偏振光旋转、常白/常黑模式、电光特性测量"}
+    ],
+    "notes": ["重点资料：TN 型液晶的扭曲向列结构、偏振光旋转 90°、常白/常黑模式、电光特性测量。", "仪器线索：激光器、偏振片、液晶盒、光功率计。"],
+    "detectionRules": [{"type":"required-field","fields":["voltage","lightPower"],"source":"中央民族大学资料摘要"}]
+  },
+  {
+    "experimentId": "tensile-young-modulus",
+    "status": "待教师审核",
+    "sources": [
+      {"institution":"中国科学技术大学","url":"https://faculty.ustc.edu.cn/system/resource/tsites/download.jsp?ap=jxzyfj&fl=6jMjA3MJJFRv&uid=26645&fid=96EF7158176A41C3835CDFA9CC57C2D6","scope":"拉伸法测钢丝杨氏模量、光杠杆测微小伸长量、最小二乘法"},
+      {"institution":"西南交通大学","url":"http://www.cxtc.edu.cn/__local/C/6E/E3/05CE8D7F0E77814820B84C75BB8_690C273A_5E9203D.pdf","scope":"拉伸法资料"}
+    ],
+    "notes": ["重点资料：杨氏模量定义、光杠杆测微小伸长量、最小二乘法数据处理。", "用户提供的资料摘要含光杠杆关系 ΔL = Lb/(2D)，变量定义与本校仪器几何关系需教师确认后使用。"],
+    "detectionRules": [{"type":"required-field","fields":["force","elongation"],"source":"拉伸法测量数据，具体字段以本校指导书为准"}]
+  },
+  {
+    "experimentId": "dynamic-young-modulus",
+    "status": "待教师审核",
+    "sources": [
+      {"institution":"哈尔滨工业大学出版社《大学物理实验（下）》","url":"","scope":"悬挂法、弯曲振动、换能器、示波器、共振频率测量"},
+      {"institution":"北京师范大学","url":"https://dxwl.bnu.edu.cn/CN/article/downloadArticleFile.do?attachType=PDF&id=4462","scope":"动力学法测杨氏模量"},
+      {"institution":"东北师范大学","url":"https://wlsy.nenu.edu.cn/2508sll.pdf","scope":"动力学法测杨氏模量"}
+    ],
+    "notes": ["重点资料：悬挂法、弯曲振动动力学方程、共振频率测量。", "用户提供的资料摘要含 E = 1.6067 l^3 m f^2 / d^4；此公式仅在变量定义、单位和适用条件均与本校指导书一致时启用。"],
+    "detectionRules": [{"type":"required-field","fields":["length","mass","diameter","frequency"],"source":"用户提供的动力学法公式摘要"}]
+  },
+  {
+    "experimentId": "potentiometer",
+    "status": "待教师审核",
+    "sources": [
+      {"institution":"广州工商学院/高等教育出版社平台","url":"http://node2d-public.hep.com.cn/d53103e25ccc74708e56317f973713ab.pdf","scope":"补偿法、新型十一线电位差计、FB322 型电位差计实验仪"},
+      {"institution":"燕山大学材料综合实验教学示范中心","url":"http://clsfzx.ysu.edu.cn/wlzy1/wlkc1/jsclgczy/jswlxn/syl_ydwcjcldzyjhjbjygrtdxc1/dwcjjqclff.htm","scope":"工作电流回路、校正回路、标准化过程、测量电阻方法、精度要求"}
+    ],
+    "notes": ["重点资料：补偿法原理、工作电流回路、校正回路、标准化过程、测量电阻方法及精度要求。"],
+    "detectionRules": [{"type":"report-section","sections":["标准化过程","测量过程"],"source":"燕山大学资料摘要"}]
+  },
+  {
+    "experimentId": "franck-hertz",
+    "status": "待教师审核",
+    "sources": [
+      {"institution":"哈尔滨工程大学物理实验教学中心","url":"http://pec.hrbeu.edu.cn/_upload/article/files/58/81/66f7a0bd455eab90bdf48d58c2fa/ef843cf9-a4ad-471a-9a0b-410c80d7f38c.pdf","scope":"原子能级量子化、非弹性碰撞、第一激发电位、逐差法"},
+      {"institution":"复旦大学物理教学实验中心","url":"http://phylab.fudan.edu.cn/lib/exe/fetch.php?media=course:platform:2023-2:4-1量子论.pdf","scope":"玻尔原子理论、第一激发电位、氩原子第一激发电位"}
+    ],
+    "notes": ["重点资料：原子能级量子化、非弹性碰撞、第一激发电位、逐差法处理数据。", "关系式：U1 = (E1 - E0)/e，须按本校实验气体与仪器设置解释。"],
+    "detectionRules": [{"type":"required-field","fields":["acceleratingVoltage","anodeCurrent"],"source":"伏安曲线与逐差法处理"}]
+  },
+  {
+    "experimentId": "hysteresis-loop",
+    "status": "待教师审核",
+    "sources": [
+      {"institution":"哈尔滨工程大学物理实验教学中心","url":"http://pec.hrbeu.edu.cn/_upload/article/files/8f/ef/6a98ce4d4511b9e72d31efaa3353/6316f487-2b28-45b4-a3bc-9e1acc54c296.pdf","scope":"动态磁滞回线、剩磁 Br、矫顽力 Hc、示波器观测法"},
+      {"institution":"清华大学","url":"https://cloud.tsinghua.edu.cn/d/c9b0fd14f0994e9f9e5b/files/?p=%2F大二下%2Fcxb%2F物理实验B2%2F【能动学习资料】大物实验A2_参考报告_1.0.pdf","scope":"UX 与 H、UY 与 B 的转换关系、X/Y 轴标定、步骤"}
+    ],
+    "notes": ["重点资料：动态磁滞回线、磁滞现象、剩磁 Br、矫顽力 Hc、软磁与硬磁材料应用。", "示波器观测中，资料摘要给出 UX ∝ H、UY ∝ B；比例常数、标定和单位必须采用本校指导书。"],
+    "detectionRules": [{"type":"report-section","sections":["X/Y 轴标定","Br","Hc"],"source":"清华/哈工程资料摘要"}]
+  },
+  {
+    "experimentId": "newtons-rings-wedge",
+    "status": "待教师审核",
+    "sources": [
+      {"institution":"兰州大学","url":"https://phylab.lzu.edu.cn/pdf/NDH.pdf","scope":"牛顿环测透镜曲率半径"},
+      {"institution":"石河子大学","url":"https://eol.shzu.edu.cn/meol/analytics/resPdfShow.do;jsessionid=1B0B43D40611325F5EF690D8FF621859?resId=151354423&lid=23335","scope":"牛顿环与劈尖干涉"},
+      {"institution":"河北师范大学","url":"https://huaxue.hebtu.edu.cn/resources/43/202510/145E0D00D99F4547BE79B19983ACC9EE.pdf","scope":"牛顿环、劈尖/分光计合并讲义"}
+    ],
+    "notes": ["已收录牛顿环、劈尖干涉资料来源；待导入本校条纹级次、测量量及计算关系。"],
+    "detectionRules": []
+  },
+  {
+    "experimentId": "grating-diffraction",
+    "status": "待教师审核",
+    "sources": [
+      {"institution":"复旦大学","url":"http://phylab.fudan.edu.cn/lib/exe/fetch.php?media=home:shma:激光的基础实验e.pdf","scope":"光栅衍射/激光波长"},
+      {"institution":"超星慕课","url":"https://mooc1.chaoxing.com/mooc-ans/ztnodedetailcontroller/visitnodedetail?courseId=205308009&knowledgeId=172145039","scope":"光栅衍射/分光计页面"}
+    ],
+    "notes": ["已收录光栅衍射资料来源；待导入本校光栅常数、级次、角度测量和波长计算要求。"],
+    "detectionRules": []
+  },
+  {
+    "experimentId": "spectrometer",
+    "status": "待教师审核",
+    "sources": [
+      {"institution":"北京大学","url":"http://jpk.pku.edu.cn/course/ptwlsy/script/chapter20.pdf","scope":"分光计调节与折射率测量"},
+      {"institution":"兰州大学","url":"https://phylab.lzu.edu.cn/pdf/FGJCDWZZSL.pdf","scope":"分光计测折射率"},
+      {"institution":"石河子大学","url":"https://eol.shzu.edu.cn/meol/analytics/resPdfShow.do;jsessionid=7CAD0845A865BB1EADE584F3B755D486?resId=151782748&lid=42959","scope":"三棱镜折射率测定"}
+    ],
+    "notes": ["已收录分光计调节、折射率测量资料来源；待确认本校实验的具体目标、角度读数规则和报告格式。"],
+    "detectionRules": []
+  },
+  {
+    "experimentId": "voltammetry",
+    "status": "待教师审核",
+    "sources": [
+      {"institution":"广西师范大学物理实验中心","url":"http://phylab.gxnu.edu.cn/_upload/article/files/74/ec/c6740c5f40138960b8ffd00875d8/a7361691-e20c-40e3-9683-1bb05d3b0ca7.pdf","scope":"非线性元件、二极管正反向特性、数字万用表判断极性、伏安法"},
+      {"institution":"电子科技大学","url":"https://study.uestc.edu.cn/wlxt/ncourse/dlfxjc/web/teachContent/teachDoc/part1.htm","scope":"线性电阻、白炽灯、二极管、稳压二极管的伏安特性对比"}
+    ],
+    "notes": ["重点资料：线性与非线性元件定义；线性电阻、白炽灯、二极管和稳压二极管的伏安特性比较；二极管正向/反向特性。", "检测重点：电压、电流单位是否统一；曲线是否保留正/反向区间；元件类型和曲线形态的文字结论是否一致。"],
+    "detectionRules": [{"type":"required-field","fields":["voltage","current","componentType"],"source":"广西师大/电子科大资料摘要"},{"type":"minimum-rows","minimum":3,"source":"至少应有可绘制曲线的数据点；具体数量以本校指导书为准"}]
+  },
+  {
+    "experimentId": "meter-modification",
+    "status": "待教师审核",
+    "sources": [
+      {"institution":"哈尔滨工程大学物理实验教学中心","url":"http://pec.hrbeu.edu.cn/_upload/article/files/65/01/3d90ba604829986025e1f37e55f3/f30ac2dd-16bc-4c47-8f71-30ce185a85f7.pdf","scope":"电表改装与校准、磁电式电表、准确度等级、校准偏差分析"},
+      {"institution":"天津理工大学物理实验中心","url":"https://physics.tjut.edu.cn/wlsyzx/info/1282/1096.htm","scope":"分流电阻、分压电阻、校准曲线、步骤"}
+    ],
+    "notes": ["重点资料：磁电式电表原理、电表改装与校准、准确度等级和偏差分析。", "资料摘要给出改装为电流表的分流电阻关系 Rs = Rg/(n - 1)；改装为电压表的分压电阻关系需按本校指导书补录。"],
+    "detectionRules": [{"type":"report-section","sections":["改装计算","校准曲线","偏差分析"],"source":"哈工程/天津理工资料摘要"}]
+  },
+  {
+    "experimentId": "falling-ball-viscosity",
+    "status": "待教师审核",
+    "sources": [
+      {"institution":"高等教育出版社","url":"http://node2d-public.hep.com.cn/e35b5fdec63d126c35e3d781b54f4b2b.pdf/e35b5fdec63d126c35e3d781b54f4b2b.pdf.html","scope":"落球法测液体粘滞系数"},
+      {"institution":"长江大学","url":"https://shuxue.yangtzeu.edu.cn/__local/1/35/A5/B05973F0D0CE2CDFBD1F26162F2_8F5E7DB9_3F6D6D.pdf","scope":"合并讲义"}
+    ],
+    "notes": ["已收录落球法资料来源；待导入本校液体温度、球径、下落距离、时间和修正项的计算规范。"],
+    "detectionRules": []
+  },
+  {
+    "experimentId": "trifilar-torsion-pendulum",
+    "status": "待教师审核",
+    "sources": [
+      {"institution":"重庆大学物理实验中心","url":"http://phylab.phys.cqu.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1539751545&wbfileid=4918375","scope":"扭摆法测转动惯量、简谐运动、扭转常数、平行轴定理"},
+      {"institution":"杭州电子科技大学/高等教育出版社平台","url":"http://node2d-public.hep.com.cn/c1aa0aa38ee35df7ac8ba94edebddefb.pdf","scope":"扭摆法测刚体转动惯量"},
+      {"institution":"集美大学","url":"https://pec.jmu.edu.cn/Teaching/Guide/NO_03.htm","scope":"三线摆"}
+    ],
+    "notes": ["扭摆部分重点资料：转动惯量、简谐运动、弹簧扭转常数、对称法验证平行轴定理。", "该课程条目合并三线摆与扭摆；两类仪器的数据字段、公式和检测规则必须在本校指导书中分别配置。"],
+    "detectionRules": []
+  },
+  {
+    "experimentId": "speed-of-sound",
+    "status": "待教师审核",
+    "sources": [
+      {"institution":"复旦大学","url":"http://phylab.fudan.edu.cn/lib/exe/fetch.php?media=exp:common:%E5%A3%B0%E9%80%9F-%E6%96%B0%E6%A6%82%E5%BF%B5%E7%89%A9%E7%90%86%E8%AE%B2%E4%B9%8926%E6%9C%B1%E9%B9%A4%E5%B9%B4.pdf","scope":"声速讲义"},
+      {"institution":"南京理工大学","url":"http://node2d-public.hep.com.cn/dcce68af096eb32d89b38e3fc3d85bda.pdf","scope":"声速测量"}
+    ],
+    "notes": ["已收录声速资料来源；需确认本校采用驻波法、相位比较法或其他方案后，才能加入正确的计算和检测规则。"],
+    "detectionRules": []
+  },
+  {
+    "experimentId": "forced-resonance",
+    "status": "待教师审核",
+    "sources": [
+      {"institution":"中山大学物理实验教学中心","url":"https://spe.sysu.edu.cn/phylab/docs/20180919175734799726.pdf","scope":"自由/阻尼/受迫振动、波尔振动仪、阻尼系数测量"},
+      {"institution":"中山大学物理实验教学中心","url":"https://spe.sysu.edu.cn/phylab/docs/20180919175755123812.pdf","scope":"转动传感器版：阻尼、拍频、频谱、相图、机械能转换"},
+      {"institution":"武汉大学","url":"https://wlsyzx.whu.edu.cn/__local/E/9F/BE/16921F9DA2AF49CF989111BBFA2_F09EA01C_518A9.pdf","scope":"波尔共振"}
+    ],
+    "notes": ["重点资料：自由振动、阻尼振动、受迫振动、阻尼系数、拍频、频谱和相图。", "资料摘要给出阻尼振动方程 d²θ/dt² + 2β dθ/dt + ω0²θ = 0；参数定义和拟合模型需按本校指导书审核。"],
+    "detectionRules": [{"type":"required-field","fields":["time","angle"],"source":"转动传感器数据的通用字段，具体字段以仪器导出格式为准"}]
+  },
+  {
+    "experimentId": "hall-effect",
+    "status": "待教师审核",
+    "sources": [
+      {"institution":"四川大学","url":"https://physics.lab.scu.edu.cn/uploads/1/file/public/201810/20181018095929_pccxdom7mt.pdf","scope":"霍尔效应基本公式（用户提供的间接资料）"}
+    ],
+    "notes": ["目前仅有含基本公式的间接资料来源，缺少完整独立讲义。暂不启用具体公式、阈值或自动检测规则。"],
+    "detectionRules": []
+  },
+  {
+    "experimentId": "hall-magnetic-field",
+    "status": "待教师审核",
+    "sources": [
+      {"institution":"复旦大学","url":"http://phylab.fudan.edu.cn/lib/exe/fetch.php?media=course:platform:2020-1:%E5%9C%86%E7%BA%BF%E5%9C%88%E5%92%8C%E4%BA%A5%E5%A7%86%E9%9C%8D%E5%85%B9%E7%BA%BF%E5%9C%88%E7%9A%84%E7%A3%81%E5%9C%BA20200508.pdf","scope":"霍尔效应/圆线圈和亥姆霍兹线圈磁场"}
+    ],
+    "notes": ["当前资料涉及霍尔法磁场测量和圆线圈/亥姆霍兹线圈磁场。需确认本校装置类型、线圈参数和测点布局后再导入公式。"],
+    "detectionRules": []
+  }
+]

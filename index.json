@@ -1,0 +1,405 @@
+{
+  "generatedAt": "2026-10-03T15:45:00.804Z",
+  "records": [
+    {
+      "id": "air-specific-heat-ratio:note:1",
+      "experimentId": "air-specific-heat-ratio",
+      "experimentName": "空气比热容比的测定",
+      "section": "来源摘要",
+      "text": "已收录资料来源，等待导入本校指导书中的实验原理、步骤、原始数据字段和计算公式。",
+      "keywords": "空气比热容比的测定 空气比热容比 已收录资料来源，等待导入本校指导书中的实验原理、步骤、原始数据字段和计算公式。"
+    },
+    {
+      "id": "air-specific-heat-ratio:sources",
+      "experimentId": "air-specific-heat-ratio",
+      "experimentName": "空气比热容比的测定",
+      "section": "资料来源",
+      "text": "四川大学：空气比热容比资料。https://physics.lab.scu.edu.cn/uploads/1/file/public/201810/20181018095929_pccxdom7mt.pdf\n长江大学：合并讲义。https://shuxue.yangtzeu.edu.cn/__local/1/35/A5/B05973F0D0CE2CDFBD1F26162F2_8F5E7DB9_3F6D6D.pdf",
+      "keywords": "空气比热容比的测定 空气比热容比 四川大学：空气比热容比资料。https://physics.lab.scu.edu.cn/uploads/1/file/public/201810/20181018095929_pccxdom7mt.pdf\n长江大学：合并讲义。https://shuxue.yangtzeu.edu.cn/__local/1/35/a5/b05973f0d0ce2cdfbd1f26162f2_8f5e7db9_3f6d6d.pdf"
+    },
+    {
+      "id": "photoelectric-effect:note:1",
+      "experimentId": "photoelectric-effect",
+      "experimentName": "光电效应",
+      "section": "来源摘要",
+      "text": "重点资料：光电效应规律、爱因斯坦方程、截止电压与频率的关系、光电管伏安特性、普朗克常数测量原理。",
+      "keywords": "光电效应 光电效应实验 重点资料：光电效应规律、爱因斯坦方程、截止电压与频率的关系、光电管伏安特性、普朗克常数测量原理。"
+    },
+    {
+      "id": "photoelectric-effect:note:2",
+      "experimentId": "photoelectric-effect",
+      "experimentName": "光电效应",
+      "section": "来源摘要",
+      "text": "检测重点：频率与截止电压的配对是否完整；拟合模型是否为指导书指定关系；单位、斜率与截距解释是否与指导书一致。",
+      "keywords": "光电效应 光电效应实验 检测重点：频率与截止电压的配对是否完整；拟合模型是否为指导书指定关系；单位、斜率与截距解释是否与指导书一致。"
+    },
+    {
+      "id": "photoelectric-effect:sources",
+      "experimentId": "photoelectric-effect",
+      "experimentName": "光电效应",
+      "section": "资料来源",
+      "text": "海南大学物理实验教学中心：ZKY-GD-4 智能光电效应实验仪、光电效应规律、爱因斯坦方程、截止电压与频率关系、普朗克常数测量原理。https://jxpt.hainanu.edu.cn/meol/analytics/resPdfShow.do?resId=242618&lid=47745\n山东大学物理实验中心：验证爱因斯坦方程、截止电压与频率线性关系、光电管伏安特性。https://www.phylab.sdu.edu.cn/shiyanbaguangdianxiaoyingcedingpulangkechangshufangzhenshiyan.pdf\n电子科技大学：光电效应法测普朗克常数。https://study.uestc.edu.cn/wlxt/ncourse/exp/web/jpkc/lanmu8/教材库/大学物理实验_基础和综合分册/32光电效应法测普朗克常数实验.pdf",
+      "keywords": "光电效应 光电效应实验 海南大学物理实验教学中心：zky-gd-4 智能光电效应实验仪、光电效应规律、爱因斯坦方程、截止电压与频率关系、普朗克常数测量原理。https://jxpt.hainanu.edu.cn/meol/analytics/respdfshow.do?resid=242618&lid=47745\n山东大学物理实验中心：验证爱因斯坦方程、截止电压与频率线性关系、光电管伏安特性。https://www.phylab.sdu.edu.cn/shiyanbaguangdianxiaoyingcedingpulangkechangshufangzhenshiyan.pdf\n电子科技大学：光电效应法测普朗克常数。https://study.uestc.edu.cn/wlxt/ncourse/exp/web/jpkc/lanmu8/教材库/大学物理实验_基础和综合分册/32光电效应法测普朗克常数实验.pdf"
+    },
+    {
+      "id": "oscilloscope:note:1",
+      "experimentId": "oscilloscope",
+      "experimentName": "示波器的使用",
+      "section": "来源摘要",
+      "text": "该实验用于示波器原理和操作学习。待导入本校仪器型号、探头倍率、量程与操作步骤后，AI 才可对具体设置作答。",
+      "keywords": "示波器的使用 示波器 该实验用于示波器原理和操作学习。待导入本校仪器型号、探头倍率、量程与操作步骤后，ai 才可对具体设置作答。"
+    },
+    {
+      "id": "oscilloscope:sources",
+      "experimentId": "oscilloscope",
+      "experimentName": "示波器的使用",
+      "section": "资料来源",
+      "text": "哈尔滨师范大学：示波器使用资料。http://exp.hrbnu.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1349863670&wbfileid=87D8D9EBCA5C33DE8698AF16F671F6FF\n山东大学：示波器原理与使用。https://www.phylab.sdu.edu.cn/shiyanqishiboqideyuanliyushiyong.pdf",
+      "keywords": "示波器的使用 示波器 哈尔滨师范大学：示波器使用资料。http://exp.hrbnu.edu.cn/system/_content/download.jsp?urltype=news.downloadattachurl&owner=1349863670&wbfileid=87d8d9ebca5c33de8698af16f671f6ff\n山东大学：示波器原理与使用。https://www.phylab.sdu.edu.cn/shiyanqishiboqideyuanliyushiyong.pdf"
+    },
+    {
+      "id": "liquid-crystal-electro-optic:note:1",
+      "experimentId": "liquid-crystal-electro-optic",
+      "experimentName": "液晶电光效应",
+      "section": "来源摘要",
+      "text": "重点资料：TN 型液晶的扭曲向列结构、偏振光旋转 90°、常白/常黑模式、电光特性测量。",
+      "keywords": "液晶电光效应 液晶电光 重点资料：tn 型液晶的扭曲向列结构、偏振光旋转 90°、常白/常黑模式、电光特性测量。"
+    },
+    {
+      "id": "liquid-crystal-electro-optic:note:2",
+      "experimentId": "liquid-crystal-electro-optic",
+      "experimentName": "液晶电光效应",
+      "section": "来源摘要",
+      "text": "仪器线索：激光器、偏振片、液晶盒、光功率计。",
+      "keywords": "液晶电光效应 液晶电光 仪器线索：激光器、偏振片、液晶盒、光功率计。"
+    },
+    {
+      "id": "liquid-crystal-electro-optic:sources",
+      "experimentId": "liquid-crystal-electro-optic",
+      "experimentName": "液晶电光效应",
+      "section": "资料来源",
+      "text": "郑州大学/高等教育出版社平台：实验背景、目的、原理、仪器、步骤、注意事项。http://node2d-public.hep.com.cn/b1981d4e9228a0963e7f5d71a2a0bda3.pdf\n中央民族大学理学院：TN 型液晶光开关、偏振光旋转、常白/常黑模式、电光特性测量。https://lxy.muc.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1750937748&wbfileid=45E02AA358D0CDE950C70B663E30D76C",
+      "keywords": "液晶电光效应 液晶电光 郑州大学/高等教育出版社平台：实验背景、目的、原理、仪器、步骤、注意事项。http://node2d-public.hep.com.cn/b1981d4e9228a0963e7f5d71a2a0bda3.pdf\n中央民族大学理学院：tn 型液晶光开关、偏振光旋转、常白/常黑模式、电光特性测量。https://lxy.muc.edu.cn/system/_content/download.jsp?urltype=news.downloadattachurl&owner=1750937748&wbfileid=45e02aa358d0cde950c70b663e30d76c"
+    },
+    {
+      "id": "tensile-young-modulus:note:1",
+      "experimentId": "tensile-young-modulus",
+      "experimentName": "拉伸法测杨氏模量",
+      "section": "来源摘要",
+      "text": "重点资料：杨氏模量定义、光杠杆测微小伸长量、最小二乘法数据处理。",
+      "keywords": "拉伸法测杨氏模量 杨氏模量 拉伸法 重点资料：杨氏模量定义、光杠杆测微小伸长量、最小二乘法数据处理。"
+    },
+    {
+      "id": "tensile-young-modulus:note:2",
+      "experimentId": "tensile-young-modulus",
+      "experimentName": "拉伸法测杨氏模量",
+      "section": "来源摘要",
+      "text": "用户提供的资料摘要含光杠杆关系 ΔL = Lb/(2D)，变量定义与本校仪器几何关系需教师确认后使用。",
+      "keywords": "拉伸法测杨氏模量 杨氏模量 拉伸法 用户提供的资料摘要含光杠杆关系 δl = lb/(2d)，变量定义与本校仪器几何关系需教师确认后使用。"
+    },
+    {
+      "id": "tensile-young-modulus:sources",
+      "experimentId": "tensile-young-modulus",
+      "experimentName": "拉伸法测杨氏模量",
+      "section": "资料来源",
+      "text": "中国科学技术大学：拉伸法测钢丝杨氏模量、光杠杆测微小伸长量、最小二乘法。https://faculty.ustc.edu.cn/system/resource/tsites/download.jsp?ap=jxzyfj&fl=6jMjA3MJJFRv&uid=26645&fid=96EF7158176A41C3835CDFA9CC57C2D6\n西南交通大学：拉伸法资料。http://www.cxtc.edu.cn/__local/C/6E/E3/05CE8D7F0E77814820B84C75BB8_690C273A_5E9203D.pdf",
+      "keywords": "拉伸法测杨氏模量 杨氏模量 拉伸法 中国科学技术大学：拉伸法测钢丝杨氏模量、光杠杆测微小伸长量、最小二乘法。https://faculty.ustc.edu.cn/system/resource/tsites/download.jsp?ap=jxzyfj&fl=6jmja3mjjfrv&uid=26645&fid=96ef7158176a41c3835cdfa9cc57c2d6\n西南交通大学：拉伸法资料。http://www.cxtc.edu.cn/__local/c/6e/e3/05ce8d7f0e77814820b84c75bb8_690c273a_5e9203d.pdf"
+    },
+    {
+      "id": "dynamic-young-modulus:note:1",
+      "experimentId": "dynamic-young-modulus",
+      "experimentName": "动力学法测杨氏模量",
+      "section": "来源摘要",
+      "text": "重点资料：悬挂法、弯曲振动动力学方程、共振频率测量。",
+      "keywords": "动力学法测杨氏模量 动力学杨氏模量 动态法测杨氏模量 重点资料：悬挂法、弯曲振动动力学方程、共振频率测量。"
+    },
+    {
+      "id": "dynamic-young-modulus:note:2",
+      "experimentId": "dynamic-young-modulus",
+      "experimentName": "动力学法测杨氏模量",
+      "section": "来源摘要",
+      "text": "用户提供的资料摘要含 E = 1.6067 l^3 m f^2 / d^4；此公式仅在变量定义、单位和适用条件均与本校指导书一致时启用。",
+      "keywords": "动力学法测杨氏模量 动力学杨氏模量 动态法测杨氏模量 用户提供的资料摘要含 e = 1.6067 l^3 m f^2 / d^4；此公式仅在变量定义、单位和适用条件均与本校指导书一致时启用。"
+    },
+    {
+      "id": "dynamic-young-modulus:sources",
+      "experimentId": "dynamic-young-modulus",
+      "experimentName": "动力学法测杨氏模量",
+      "section": "资料来源",
+      "text": "哈尔滨工业大学出版社《大学物理实验（下）》：悬挂法、弯曲振动、换能器、示波器、共振频率测量。\n北京师范大学：动力学法测杨氏模量。https://dxwl.bnu.edu.cn/CN/article/downloadArticleFile.do?attachType=PDF&id=4462\n东北师范大学：动力学法测杨氏模量。https://wlsy.nenu.edu.cn/2508sll.pdf",
+      "keywords": "动力学法测杨氏模量 动力学杨氏模量 动态法测杨氏模量 哈尔滨工业大学出版社《大学物理实验（下）》：悬挂法、弯曲振动、换能器、示波器、共振频率测量。\n北京师范大学：动力学法测杨氏模量。https://dxwl.bnu.edu.cn/cn/article/downloadarticlefile.do?attachtype=pdf&id=4462\n东北师范大学：动力学法测杨氏模量。https://wlsy.nenu.edu.cn/2508sll.pdf"
+    },
+    {
+      "id": "potentiometer:note:1",
+      "experimentId": "potentiometer",
+      "experimentName": "电位差计",
+      "section": "来源摘要",
+      "text": "重点资料：补偿法原理、工作电流回路、校正回路、标准化过程、测量电阻方法及精度要求。",
+      "keywords": "电位差计 电位差计的使用 重点资料：补偿法原理、工作电流回路、校正回路、标准化过程、测量电阻方法及精度要求。"
+    },
+    {
+      "id": "potentiometer:sources",
+      "experimentId": "potentiometer",
+      "experimentName": "电位差计",
+      "section": "资料来源",
+      "text": "广州工商学院/高等教育出版社平台：补偿法、新型十一线电位差计、FB322 型电位差计实验仪。http://node2d-public.hep.com.cn/d53103e25ccc74708e56317f973713ab.pdf\n燕山大学材料综合实验教学示范中心：工作电流回路、校正回路、标准化过程、测量电阻方法、精度要求。http://clsfzx.ysu.edu.cn/wlzy1/wlkc1/jsclgczy/jswlxn/syl_ydwcjcldzyjhjbjygrtdxc1/dwcjjqclff.htm",
+      "keywords": "电位差计 电位差计的使用 广州工商学院/高等教育出版社平台：补偿法、新型十一线电位差计、fb322 型电位差计实验仪。http://node2d-public.hep.com.cn/d53103e25ccc74708e56317f973713ab.pdf\n燕山大学材料综合实验教学示范中心：工作电流回路、校正回路、标准化过程、测量电阻方法、精度要求。http://clsfzx.ysu.edu.cn/wlzy1/wlkc1/jsclgczy/jswlxn/syl_ydwcjcldzyjhjbjygrtdxc1/dwcjjqclff.htm"
+    },
+    {
+      "id": "franck-hertz:note:1",
+      "experimentId": "franck-hertz",
+      "experimentName": "弗兰克-赫兹实验",
+      "section": "来源摘要",
+      "text": "重点资料：原子能级量子化、非弹性碰撞、第一激发电位、逐差法处理数据。",
+      "keywords": "弗兰克-赫兹实验 弗兰克赫兹 franck-hertz 重点资料：原子能级量子化、非弹性碰撞、第一激发电位、逐差法处理数据。"
+    },
+    {
+      "id": "franck-hertz:note:2",
+      "experimentId": "franck-hertz",
+      "experimentName": "弗兰克-赫兹实验",
+      "section": "来源摘要",
+      "text": "关系式：U1 = (E1 - E0)/e，须按本校实验气体与仪器设置解释。",
+      "keywords": "弗兰克-赫兹实验 弗兰克赫兹 franck-hertz 关系式：u1 = (e1 - e0)/e，须按本校实验气体与仪器设置解释。"
+    },
+    {
+      "id": "franck-hertz:sources",
+      "experimentId": "franck-hertz",
+      "experimentName": "弗兰克-赫兹实验",
+      "section": "资料来源",
+      "text": "哈尔滨工程大学物理实验教学中心：原子能级量子化、非弹性碰撞、第一激发电位、逐差法。http://pec.hrbeu.edu.cn/_upload/article/files/58/81/66f7a0bd455eab90bdf48d58c2fa/ef843cf9-a4ad-471a-9a0b-410c80d7f38c.pdf\n复旦大学物理教学实验中心：玻尔原子理论、第一激发电位、氩原子第一激发电位。http://phylab.fudan.edu.cn/lib/exe/fetch.php?media=course:platform:2023-2:4-1量子论.pdf",
+      "keywords": "弗兰克-赫兹实验 弗兰克赫兹 franck-hertz 哈尔滨工程大学物理实验教学中心：原子能级量子化、非弹性碰撞、第一激发电位、逐差法。http://pec.hrbeu.edu.cn/_upload/article/files/58/81/66f7a0bd455eab90bdf48d58c2fa/ef843cf9-a4ad-471a-9a0b-410c80d7f38c.pdf\n复旦大学物理教学实验中心：玻尔原子理论、第一激发电位、氩原子第一激发电位。http://phylab.fudan.edu.cn/lib/exe/fetch.php?media=course:platform:2023-2:4-1量子论.pdf"
+    },
+    {
+      "id": "hysteresis-loop:note:1",
+      "experimentId": "hysteresis-loop",
+      "experimentName": "磁滞回线",
+      "section": "来源摘要",
+      "text": "重点资料：动态磁滞回线、磁滞现象、剩磁 Br、矫顽力 Hc、软磁与硬磁材料应用。",
+      "keywords": "磁滞回线 磁滞回线实验 重点资料：动态磁滞回线、磁滞现象、剩磁 br、矫顽力 hc、软磁与硬磁材料应用。"
+    },
+    {
+      "id": "hysteresis-loop:note:2",
+      "experimentId": "hysteresis-loop",
+      "experimentName": "磁滞回线",
+      "section": "来源摘要",
+      "text": "示波器观测中，资料摘要给出 UX ∝ H、UY ∝ B；比例常数、标定和单位必须采用本校指导书。",
+      "keywords": "磁滞回线 磁滞回线实验 示波器观测中，资料摘要给出 ux ∝ h、uy ∝ b；比例常数、标定和单位必须采用本校指导书。"
+    },
+    {
+      "id": "hysteresis-loop:sources",
+      "experimentId": "hysteresis-loop",
+      "experimentName": "磁滞回线",
+      "section": "资料来源",
+      "text": "哈尔滨工程大学物理实验教学中心：动态磁滞回线、剩磁 Br、矫顽力 Hc、示波器观测法。http://pec.hrbeu.edu.cn/_upload/article/files/8f/ef/6a98ce4d4511b9e72d31efaa3353/6316f487-2b28-45b4-a3bc-9e1acc54c296.pdf\n清华大学：UX 与 H、UY 与 B 的转换关系、X/Y 轴标定、步骤。https://cloud.tsinghua.edu.cn/d/c9b0fd14f0994e9f9e5b/files/?p=%2F大二下%2Fcxb%2F物理实验B2%2F【能动学习资料】大物实验A2_参考报告_1.0.pdf",
+      "keywords": "磁滞回线 磁滞回线实验 哈尔滨工程大学物理实验教学中心：动态磁滞回线、剩磁 br、矫顽力 hc、示波器观测法。http://pec.hrbeu.edu.cn/_upload/article/files/8f/ef/6a98ce4d4511b9e72d31efaa3353/6316f487-2b28-45b4-a3bc-9e1acc54c296.pdf\n清华大学：ux 与 h、uy 与 b 的转换关系、x/y 轴标定、步骤。https://cloud.tsinghua.edu.cn/d/c9b0fd14f0994e9f9e5b/files/?p=%2f大二下%2fcxb%2f物理实验b2%2f【能动学习资料】大物实验a2_参考报告_1.0.pdf"
+    },
+    {
+      "id": "newtons-rings-wedge:note:1",
+      "experimentId": "newtons-rings-wedge",
+      "experimentName": "牛顿环、劈尖",
+      "section": "来源摘要",
+      "text": "已收录牛顿环、劈尖干涉资料来源；待导入本校条纹级次、测量量及计算关系。",
+      "keywords": "牛顿环、劈尖 牛顿环 劈尖干涉 已收录牛顿环、劈尖干涉资料来源；待导入本校条纹级次、测量量及计算关系。"
+    },
+    {
+      "id": "newtons-rings-wedge:sources",
+      "experimentId": "newtons-rings-wedge",
+      "experimentName": "牛顿环、劈尖",
+      "section": "资料来源",
+      "text": "兰州大学：牛顿环测透镜曲率半径。https://phylab.lzu.edu.cn/pdf/NDH.pdf\n石河子大学：牛顿环与劈尖干涉。https://eol.shzu.edu.cn/meol/analytics/resPdfShow.do;jsessionid=1B0B43D40611325F5EF690D8FF621859?resId=151354423&lid=23335\n河北师范大学：牛顿环、劈尖/分光计合并讲义。https://huaxue.hebtu.edu.cn/resources/43/202510/145E0D00D99F4547BE79B19983ACC9EE.pdf",
+      "keywords": "牛顿环、劈尖 牛顿环 劈尖干涉 兰州大学：牛顿环测透镜曲率半径。https://phylab.lzu.edu.cn/pdf/ndh.pdf\n石河子大学：牛顿环与劈尖干涉。https://eol.shzu.edu.cn/meol/analytics/respdfshow.do;jsessionid=1b0b43d40611325f5ef690d8ff621859?resid=151354423&lid=23335\n河北师范大学：牛顿环、劈尖/分光计合并讲义。https://huaxue.hebtu.edu.cn/resources/43/202510/145e0d00d99f4547be79b19983acc9ee.pdf"
+    },
+    {
+      "id": "grating-diffraction:note:1",
+      "experimentId": "grating-diffraction",
+      "experimentName": "光栅衍射实验",
+      "section": "来源摘要",
+      "text": "已收录光栅衍射资料来源；待导入本校光栅常数、级次、角度测量和波长计算要求。",
+      "keywords": "光栅衍射实验 光栅衍射 已收录光栅衍射资料来源；待导入本校光栅常数、级次、角度测量和波长计算要求。"
+    },
+    {
+      "id": "grating-diffraction:sources",
+      "experimentId": "grating-diffraction",
+      "experimentName": "光栅衍射实验",
+      "section": "资料来源",
+      "text": "复旦大学：光栅衍射/激光波长。http://phylab.fudan.edu.cn/lib/exe/fetch.php?media=home:shma:激光的基础实验e.pdf\n超星慕课：光栅衍射/分光计页面。https://mooc1.chaoxing.com/mooc-ans/ztnodedetailcontroller/visitnodedetail?courseId=205308009&knowledgeId=172145039",
+      "keywords": "光栅衍射实验 光栅衍射 复旦大学：光栅衍射/激光波长。http://phylab.fudan.edu.cn/lib/exe/fetch.php?media=home:shma:激光的基础实验e.pdf\n超星慕课：光栅衍射/分光计页面。https://mooc1.chaoxing.com/mooc-ans/ztnodedetailcontroller/visitnodedetail?courseid=205308009&knowledgeid=172145039"
+    },
+    {
+      "id": "spectrometer:note:1",
+      "experimentId": "spectrometer",
+      "experimentName": "分光计的使用",
+      "section": "来源摘要",
+      "text": "已收录分光计调节、折射率测量资料来源；待确认本校实验的具体目标、角度读数规则和报告格式。",
+      "keywords": "分光计的使用 分光计 已收录分光计调节、折射率测量资料来源；待确认本校实验的具体目标、角度读数规则和报告格式。"
+    },
+    {
+      "id": "spectrometer:sources",
+      "experimentId": "spectrometer",
+      "experimentName": "分光计的使用",
+      "section": "资料来源",
+      "text": "北京大学：分光计调节与折射率测量。http://jpk.pku.edu.cn/course/ptwlsy/script/chapter20.pdf\n兰州大学：分光计测折射率。https://phylab.lzu.edu.cn/pdf/FGJCDWZZSL.pdf\n石河子大学：三棱镜折射率测定。https://eol.shzu.edu.cn/meol/analytics/resPdfShow.do;jsessionid=7CAD0845A865BB1EADE584F3B755D486?resId=151782748&lid=42959",
+      "keywords": "分光计的使用 分光计 北京大学：分光计调节与折射率测量。http://jpk.pku.edu.cn/course/ptwlsy/script/chapter20.pdf\n兰州大学：分光计测折射率。https://phylab.lzu.edu.cn/pdf/fgjcdwzzsl.pdf\n石河子大学：三棱镜折射率测定。https://eol.shzu.edu.cn/meol/analytics/respdfshow.do;jsessionid=7cad0845a865bb1eade584f3b755d486?resid=151782748&lid=42959"
+    },
+    {
+      "id": "voltammetry:note:1",
+      "experimentId": "voltammetry",
+      "experimentName": "伏安特性",
+      "section": "来源摘要",
+      "text": "重点资料：线性与非线性元件定义；线性电阻、白炽灯、二极管和稳压二极管的伏安特性比较；二极管正向/反向特性。",
+      "keywords": "伏安特性 伏安特性实验 重点资料：线性与非线性元件定义；线性电阻、白炽灯、二极管和稳压二极管的伏安特性比较；二极管正向/反向特性。"
+    },
+    {
+      "id": "voltammetry:note:2",
+      "experimentId": "voltammetry",
+      "experimentName": "伏安特性",
+      "section": "来源摘要",
+      "text": "检测重点：电压、电流单位是否统一；曲线是否保留正/反向区间；元件类型和曲线形态的文字结论是否一致。",
+      "keywords": "伏安特性 伏安特性实验 检测重点：电压、电流单位是否统一；曲线是否保留正/反向区间；元件类型和曲线形态的文字结论是否一致。"
+    },
+    {
+      "id": "voltammetry:sources",
+      "experimentId": "voltammetry",
+      "experimentName": "伏安特性",
+      "section": "资料来源",
+      "text": "广西师范大学物理实验中心：非线性元件、二极管正反向特性、数字万用表判断极性、伏安法。http://phylab.gxnu.edu.cn/_upload/article/files/74/ec/c6740c5f40138960b8ffd00875d8/a7361691-e20c-40e3-9683-1bb05d3b0ca7.pdf\n电子科技大学：线性电阻、白炽灯、二极管、稳压二极管的伏安特性对比。https://study.uestc.edu.cn/wlxt/ncourse/dlfxjc/web/teachContent/teachDoc/part1.htm",
+      "keywords": "伏安特性 伏安特性实验 广西师范大学物理实验中心：非线性元件、二极管正反向特性、数字万用表判断极性、伏安法。http://phylab.gxnu.edu.cn/_upload/article/files/74/ec/c6740c5f40138960b8ffd00875d8/a7361691-e20c-40e3-9683-1bb05d3b0ca7.pdf\n电子科技大学：线性电阻、白炽灯、二极管、稳压二极管的伏安特性对比。https://study.uestc.edu.cn/wlxt/ncourse/dlfxjc/web/teachcontent/teachdoc/part1.htm"
+    },
+    {
+      "id": "meter-modification:note:1",
+      "experimentId": "meter-modification",
+      "experimentName": "电表改装",
+      "section": "来源摘要",
+      "text": "重点资料：磁电式电表原理、电表改装与校准、准确度等级和偏差分析。",
+      "keywords": "电表改装 电表改装实验 重点资料：磁电式电表原理、电表改装与校准、准确度等级和偏差分析。"
+    },
+    {
+      "id": "meter-modification:note:2",
+      "experimentId": "meter-modification",
+      "experimentName": "电表改装",
+      "section": "来源摘要",
+      "text": "资料摘要给出改装为电流表的分流电阻关系 Rs = Rg/(n - 1)；改装为电压表的分压电阻关系需按本校指导书补录。",
+      "keywords": "电表改装 电表改装实验 资料摘要给出改装为电流表的分流电阻关系 rs = rg/(n - 1)；改装为电压表的分压电阻关系需按本校指导书补录。"
+    },
+    {
+      "id": "meter-modification:sources",
+      "experimentId": "meter-modification",
+      "experimentName": "电表改装",
+      "section": "资料来源",
+      "text": "哈尔滨工程大学物理实验教学中心：电表改装与校准、磁电式电表、准确度等级、校准偏差分析。http://pec.hrbeu.edu.cn/_upload/article/files/65/01/3d90ba604829986025e1f37e55f3/f30ac2dd-16bc-4c47-8f71-30ce185a85f7.pdf\n天津理工大学物理实验中心：分流电阻、分压电阻、校准曲线、步骤。https://physics.tjut.edu.cn/wlsyzx/info/1282/1096.htm",
+      "keywords": "电表改装 电表改装实验 哈尔滨工程大学物理实验教学中心：电表改装与校准、磁电式电表、准确度等级、校准偏差分析。http://pec.hrbeu.edu.cn/_upload/article/files/65/01/3d90ba604829986025e1f37e55f3/f30ac2dd-16bc-4c47-8f71-30ce185a85f7.pdf\n天津理工大学物理实验中心：分流电阻、分压电阻、校准曲线、步骤。https://physics.tjut.edu.cn/wlsyzx/info/1282/1096.htm"
+    },
+    {
+      "id": "falling-ball-viscosity:note:1",
+      "experimentId": "falling-ball-viscosity",
+      "experimentName": "落球法测粘滞系数",
+      "section": "来源摘要",
+      "text": "已收录落球法资料来源；待导入本校液体温度、球径、下落距离、时间和修正项的计算规范。",
+      "keywords": "落球法测粘滞系数 落球法 粘滞系数 已收录落球法资料来源；待导入本校液体温度、球径、下落距离、时间和修正项的计算规范。"
+    },
+    {
+      "id": "falling-ball-viscosity:sources",
+      "experimentId": "falling-ball-viscosity",
+      "experimentName": "落球法测粘滞系数",
+      "section": "资料来源",
+      "text": "高等教育出版社：落球法测液体粘滞系数。http://node2d-public.hep.com.cn/e35b5fdec63d126c35e3d781b54f4b2b.pdf/e35b5fdec63d126c35e3d781b54f4b2b.pdf.html\n长江大学：合并讲义。https://shuxue.yangtzeu.edu.cn/__local/1/35/A5/B05973F0D0CE2CDFBD1F26162F2_8F5E7DB9_3F6D6D.pdf",
+      "keywords": "落球法测粘滞系数 落球法 粘滞系数 高等教育出版社：落球法测液体粘滞系数。http://node2d-public.hep.com.cn/e35b5fdec63d126c35e3d781b54f4b2b.pdf/e35b5fdec63d126c35e3d781b54f4b2b.pdf.html\n长江大学：合并讲义。https://shuxue.yangtzeu.edu.cn/__local/1/35/a5/b05973f0d0ce2cdfbd1f26162f2_8f5e7db9_3f6d6d.pdf"
+    },
+    {
+      "id": "trifilar-torsion-pendulum:note:1",
+      "experimentId": "trifilar-torsion-pendulum",
+      "experimentName": "三线摆、扭摆实验",
+      "section": "来源摘要",
+      "text": "扭摆部分重点资料：转动惯量、简谐运动、弹簧扭转常数、对称法验证平行轴定理。",
+      "keywords": "三线摆、扭摆实验 三线摆 扭摆 扭摆部分重点资料：转动惯量、简谐运动、弹簧扭转常数、对称法验证平行轴定理。"
+    },
+    {
+      "id": "trifilar-torsion-pendulum:note:2",
+      "experimentId": "trifilar-torsion-pendulum",
+      "experimentName": "三线摆、扭摆实验",
+      "section": "来源摘要",
+      "text": "该课程条目合并三线摆与扭摆；两类仪器的数据字段、公式和检测规则必须在本校指导书中分别配置。",
+      "keywords": "三线摆、扭摆实验 三线摆 扭摆 该课程条目合并三线摆与扭摆；两类仪器的数据字段、公式和检测规则必须在本校指导书中分别配置。"
+    },
+    {
+      "id": "trifilar-torsion-pendulum:sources",
+      "experimentId": "trifilar-torsion-pendulum",
+      "experimentName": "三线摆、扭摆实验",
+      "section": "资料来源",
+      "text": "重庆大学物理实验中心：扭摆法测转动惯量、简谐运动、扭转常数、平行轴定理。http://phylab.phys.cqu.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1539751545&wbfileid=4918375\n杭州电子科技大学/高等教育出版社平台：扭摆法测刚体转动惯量。http://node2d-public.hep.com.cn/c1aa0aa38ee35df7ac8ba94edebddefb.pdf\n集美大学：三线摆。https://pec.jmu.edu.cn/Teaching/Guide/NO_03.htm",
+      "keywords": "三线摆、扭摆实验 三线摆 扭摆 重庆大学物理实验中心：扭摆法测转动惯量、简谐运动、扭转常数、平行轴定理。http://phylab.phys.cqu.edu.cn/system/_content/download.jsp?urltype=news.downloadattachurl&owner=1539751545&wbfileid=4918375\n杭州电子科技大学/高等教育出版社平台：扭摆法测刚体转动惯量。http://node2d-public.hep.com.cn/c1aa0aa38ee35df7ac8ba94edebddefb.pdf\n集美大学：三线摆。https://pec.jmu.edu.cn/teaching/guide/no_03.htm"
+    },
+    {
+      "id": "speed-of-sound:note:1",
+      "experimentId": "speed-of-sound",
+      "experimentName": "声速测量",
+      "section": "来源摘要",
+      "text": "已收录声速资料来源；需确认本校采用驻波法、相位比较法或其他方案后，才能加入正确的计算和检测规则。",
+      "keywords": "声速测量 声速 已收录声速资料来源；需确认本校采用驻波法、相位比较法或其他方案后，才能加入正确的计算和检测规则。"
+    },
+    {
+      "id": "speed-of-sound:sources",
+      "experimentId": "speed-of-sound",
+      "experimentName": "声速测量",
+      "section": "资料来源",
+      "text": "复旦大学：声速讲义。http://phylab.fudan.edu.cn/lib/exe/fetch.php?media=exp:common:%E5%A3%B0%E9%80%9F-%E6%96%B0%E6%A6%82%E5%BF%B5%E7%89%A9%E7%90%86%E8%AE%B2%E4%B9%8926%E6%9C%B1%E9%B9%A4%E5%B9%B4.pdf\n南京理工大学：声速测量。http://node2d-public.hep.com.cn/dcce68af096eb32d89b38e3fc3d85bda.pdf",
+      "keywords": "声速测量 声速 复旦大学：声速讲义。http://phylab.fudan.edu.cn/lib/exe/fetch.php?media=exp:common:%e5%a3%b0%e9%80%9f-%e6%96%b0%e6%a6%82%e5%bf%b5%e7%89%a9%e7%90%86%e8%ae%b2%e4%b9%8926%e6%9c%b1%e9%b9%a4%e5%b9%b4.pdf\n南京理工大学：声速测量。http://node2d-public.hep.com.cn/dcce68af096eb32d89b38e3fc3d85bda.pdf"
+    },
+    {
+      "id": "forced-resonance:note:1",
+      "experimentId": "forced-resonance",
+      "experimentName": "波尔共振",
+      "section": "来源摘要",
+      "text": "重点资料：自由振动、阻尼振动、受迫振动、阻尼系数、拍频、频谱和相图。",
+      "keywords": "波尔共振 受迫振动 波尔共振实验 重点资料：自由振动、阻尼振动、受迫振动、阻尼系数、拍频、频谱和相图。"
+    },
+    {
+      "id": "forced-resonance:note:2",
+      "experimentId": "forced-resonance",
+      "experimentName": "波尔共振",
+      "section": "来源摘要",
+      "text": "资料摘要给出阻尼振动方程 d²θ/dt² + 2β dθ/dt + ω0²θ = 0；参数定义和拟合模型需按本校指导书审核。",
+      "keywords": "波尔共振 受迫振动 波尔共振实验 资料摘要给出阻尼振动方程 d²θ/dt² + 2β dθ/dt + ω0²θ = 0；参数定义和拟合模型需按本校指导书审核。"
+    },
+    {
+      "id": "forced-resonance:sources",
+      "experimentId": "forced-resonance",
+      "experimentName": "波尔共振",
+      "section": "资料来源",
+      "text": "中山大学物理实验教学中心：自由/阻尼/受迫振动、波尔振动仪、阻尼系数测量。https://spe.sysu.edu.cn/phylab/docs/20180919175734799726.pdf\n中山大学物理实验教学中心：转动传感器版：阻尼、拍频、频谱、相图、机械能转换。https://spe.sysu.edu.cn/phylab/docs/20180919175755123812.pdf\n武汉大学：波尔共振。https://wlsyzx.whu.edu.cn/__local/E/9F/BE/16921F9DA2AF49CF989111BBFA2_F09EA01C_518A9.pdf",
+      "keywords": "波尔共振 受迫振动 波尔共振实验 中山大学物理实验教学中心：自由/阻尼/受迫振动、波尔振动仪、阻尼系数测量。https://spe.sysu.edu.cn/phylab/docs/20180919175734799726.pdf\n中山大学物理实验教学中心：转动传感器版：阻尼、拍频、频谱、相图、机械能转换。https://spe.sysu.edu.cn/phylab/docs/20180919175755123812.pdf\n武汉大学：波尔共振。https://wlsyzx.whu.edu.cn/__local/e/9f/be/16921f9da2af49cf989111bbfa2_f09ea01c_518a9.pdf"
+    },
+    {
+      "id": "hall-effect:note:1",
+      "experimentId": "hall-effect",
+      "experimentName": "霍尔效应",
+      "section": "来源摘要",
+      "text": "目前仅有含基本公式的间接资料来源，缺少完整独立讲义。暂不启用具体公式、阈值或自动检测规则。",
+      "keywords": "霍尔效应 霍尔效应实验 目前仅有含基本公式的间接资料来源，缺少完整独立讲义。暂不启用具体公式、阈值或自动检测规则。"
+    },
+    {
+      "id": "hall-effect:sources",
+      "experimentId": "hall-effect",
+      "experimentName": "霍尔效应",
+      "section": "资料来源",
+      "text": "四川大学：霍尔效应基本公式（用户提供的间接资料）。https://physics.lab.scu.edu.cn/uploads/1/file/public/201810/20181018095929_pccxdom7mt.pdf",
+      "keywords": "霍尔效应 霍尔效应实验 四川大学：霍尔效应基本公式（用户提供的间接资料）。https://physics.lab.scu.edu.cn/uploads/1/file/public/201810/20181018095929_pccxdom7mt.pdf"
+    },
+    {
+      "id": "hall-magnetic-field:note:1",
+      "experimentId": "hall-magnetic-field",
+      "experimentName": "磁场测量（霍尔法）",
+      "section": "来源摘要",
+      "text": "当前资料涉及霍尔法磁场测量和圆线圈/亥姆霍兹线圈磁场。需确认本校装置类型、线圈参数和测点布局后再导入公式。",
+      "keywords": "磁场测量（霍尔法） 霍尔法测磁场 磁场测量 当前资料涉及霍尔法磁场测量和圆线圈/亥姆霍兹线圈磁场。需确认本校装置类型、线圈参数和测点布局后再导入公式。"
+    },
+    {
+      "id": "hall-magnetic-field:sources",
+      "experimentId": "hall-magnetic-field",
+      "experimentName": "磁场测量（霍尔法）",
+      "section": "资料来源",
+      "text": "复旦大学：霍尔效应/圆线圈和亥姆霍兹线圈磁场。http://phylab.fudan.edu.cn/lib/exe/fetch.php?media=course:platform:2020-1:%E5%9C%86%E7%BA%BF%E5%9C%88%E5%92%8C%E4%BA%A5%E5%A7%86%E9%9C%8D%E5%85%B9%E7%BA%BF%E5%9C%88%E7%9A%84%E7%A3%81%E5%9C%BA20200508.pdf",
+      "keywords": "磁场测量（霍尔法） 霍尔法测磁场 磁场测量 复旦大学：霍尔效应/圆线圈和亥姆霍兹线圈磁场。http://phylab.fudan.edu.cn/lib/exe/fetch.php?media=course:platform:2020-1:%e5%9c%86%e7%ba%bf%e5%9c%88%e5%92%8c%e4%ba%a5%e5%a7%86%e9%9c%8d%e5%85%b9%e7%ba%bf%e5%9c%88%e7%9a%84%e7%a3%81%e5%9c%ba20200508.pdf"
+    }
+  ]
+}

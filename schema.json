@@ -1,0 +1,19 @@
+{
+  "title": "大学物理实验知识库实验条目规范",
+  "required": ["id", "name", "status", "sourceDocuments", "content", "detectionRules"],
+  "status": ["待导入资料", "待教师审核", "已审核"],
+  "content": {
+    "objective": "实验目的",
+    "principle": "实验原理与符号定义",
+    "apparatus": "仪器、量程与精度",
+    "procedure": "规范操作步骤和安全注意事项",
+    "dataRequirements": ["字段名、单位、允许范围、有效数字要求"],
+    "formulae": ["公式、变量含义、适用条件"],
+    "commonIssues": ["常见错误、原因与排查方法"],
+    "reportRequirements": ["报告必填章节、图表和讨论要求"]
+  },
+  "detectionRules": {
+    "type": ["required-field", "unit", "range", "minimum-rows", "formula", "fit-metric", "report-section"],
+    "rule": "只填写可由程序明确判定的规则；阈值必须标注来源。"
+  }
+}
