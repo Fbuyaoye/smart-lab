@@ -13,6 +13,19 @@ test("retrieves records only from the requested experiment", async () => {
   ] }));
   const result = await retrieveKnowledge("photo", "截止电压怎么处理", filePath);
   assert.equal(result.experimentName, "光电效应");
+  assert.equal(result.scope, "experiment");
   assert.equal(result.excerpts.length, 1);
   assert.match(result.excerpts[0].text, /频率/);
+});
+
+test("retrieves from all experiments when no experiment is selected", async () => {
+  const filePath = join(tmpdir(), `smart-lab-index-${Date.now()}-all.json`);
+  await writeFile(filePath, JSON.stringify({ records: [
+    { id: "photo:1", experimentId: "photo", experimentName: "光电效应", section: "来源摘要", text: "截止电压与频率线性关系", keywords: "光电效应 截止电压 频率" },
+    { id: "hall:1", experimentId: "hall", experimentName: "霍尔效应", section: "来源摘要", text: "霍尔电压与磁场有关", keywords: "霍尔效应 霍尔电压 磁场" }
+  ] }));
+  const result = await retrieveKnowledge(undefined, "霍尔电压怎么测量", filePath);
+  assert.equal(result.scope, "all");
+  assert.equal(result.experimentName, undefined);
+  assert.equal(result.excerpts[0].experimentName, "霍尔效应");
 });

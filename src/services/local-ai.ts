@@ -69,7 +69,7 @@ export async function classifyIntent(question: string): Promise<{ intent: Intent
   return { intent: best.intent, confidence };
 }
 
-function usableExcerpts(knowledge: KnowledgeContext): Array<{ section: string; text: string }> {
+function usableExcerpts(knowledge: KnowledgeContext): KnowledgeContext["excerpts"] {
   const nonSource = knowledge.excerpts.filter((item) => item.section !== "资料来源");
   return (nonSource.length > 0 ? nonSource : knowledge.excerpts).slice(0, 2);
 }
@@ -84,7 +84,8 @@ export async function askLocalAssistant(knowledge: KnowledgeContext, question: s
     : intent === "report"
       ? "报告应如实引用原始数据和确定性计算结果，不能由本地助手替代最终结论。"
       : "如果需要具体仪器参数、公式或操作顺序，请补充本校指导书内容后再确认。";
-  return `【${knowledge.experimentName}｜本地助教】\n识别方向：${intentNames[intent]}。\n${certainty}已收录资料：\n${evidence}\n\n${nextStep}`;
+  const title = knowledge.scope === "experiment" ? knowledge.experimentName : "通用实验问答";
+  return `【${title}｜本地助教】\n识别方向：${intentNames[intent]}。\n${certainty}已收录资料：\n${evidence}\n\n${nextStep}`;
 }
 
 function resultSummary(analysis: AnalysisResult): string {

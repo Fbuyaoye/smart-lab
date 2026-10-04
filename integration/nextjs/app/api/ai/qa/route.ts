@@ -7,8 +7,8 @@ export async function POST(request: NextRequest) {
   if (!body || typeof body.question !== "string" || !body.question.trim() || body.question.length > maxQuestionLength) {
     return NextResponse.json({ error: "问题不能为空，且不能超过 2000 个字符。" }, { status: 400 });
   }
-  if (typeof body.experimentId !== "string" || !body.experimentId.trim()) {
-    return NextResponse.json({ error: "缺少实验标识。" }, { status: 400 });
+  if (body.experimentId !== undefined && body.experimentId !== null && (typeof body.experimentId !== "string" || !body.experimentId.trim())) {
+    return NextResponse.json({ error: "实验标识必须是非空文本。" }, { status: 400 });
   }
 
   const serviceUrl = process.env.AI_SERVICE_URL;
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
         Authorization: `Bearer ${serviceToken}`,
       },
       body: JSON.stringify({
-        experimentId: body.experimentId,
+        ...(typeof body.experimentId === "string" ? { experimentId: body.experimentId.trim() } : {}),
         question: body.question.trim(),
         history: Array.isArray(body.history) ? body.history : [],
       }),

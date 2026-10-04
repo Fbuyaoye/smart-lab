@@ -16,9 +16,10 @@ type KnowledgeIndex = {
 };
 
 export type KnowledgeContext = {
-  experimentId: string;
-  experimentName: string;
-  excerpts: Array<Pick<KnowledgeRecord, "section" | "text">>;
+  experimentId?: string;
+  experimentName?: string;
+  scope: "experiment" | "all";
+  excerpts: Array<Pick<KnowledgeRecord, "experimentId" | "experimentName" | "section" | "text">>;
 };
 
 function queryTerms(query: string): string[] {
@@ -33,7 +34,7 @@ function indexPath(): string {
     ?? resolve(process.cwd(), "..", "smart-lab-knowledge-base", "index.json");
 }
 
-export async function retrieveKnowledge(experimentId: string, question: string, filePath = indexPath()): Promise<KnowledgeContext> {
+export async function retrieveKnowledge(experimentId: string | undefined, question: string, filePath = indexPath()): Promise<KnowledgeContext> {
   let index: KnowledgeIndex;
   try {
     index = JSON.parse(await readFile(filePath, "utf8")) as KnowledgeIndex;
@@ -41,9 +42,12 @@ export async function retrieveKnowledge(experimentId: string, question: string, 
     throw new AppError(503, "实验知识库尚未构建或无法读取。");
   }
 
-  const candidates = index.records.filter((record) => record.experimentId === experimentId);
+  const selectedExperimentId = experimentId?.trim() || undefined;
+  const candidates = selectedExperimentId
+    ? index.records.filter((record) => record.experimentId === selectedExperimentId)
+    : index.records;
   if (candidates.length === 0) {
-    throw new AppError(404, "当前实验尚未录入知识库资料。");
+    throw new AppError(404, selectedExperimentId ? "当前实验尚未录入知识库资料。" : "实验知识库中暂无资料。");
   }
 
   const terms = queryTerms(question);
@@ -55,7 +59,17 @@ export async function retrieveKnowledge(experimentId: string, question: string, 
     })
     .sort((left, right) => right.score - left.score || left.record.section.localeCompare(right.record.section, "zh-CN"))
     .slice(0, 6)
-    .map(({ record }) => ({ section: record.section, text: record.text }));
+    .map(({ record }) => ({
+      experimentId: record.experimentId,
+      experimentName: record.experimentName,
+      section: record.section,
+      text: record.text,
+    }));
 
-  return { experimentId, experimentName: candidates[0].experimentName, excerpts: ranked };
+  return {
+    experimentId: selectedExperimentId,
+    experimentName: selectedExperimentId ? candidates[0].experimentName : undefined,
+    scope: selectedExperimentId ? "experiment" : "all",
+    excerpts: ranked,
+  };
 }

@@ -84,6 +84,13 @@ function readExperimentId(body: Record<string, unknown>): string {
   return experimentId;
 }
 
+function readOptionalExperimentId(body: Record<string, unknown>): string | undefined {
+  const experimentId = body.experimentId;
+  if (experimentId === undefined || experimentId === null || experimentId === "") return undefined;
+  if (typeof experimentId !== "string") throw new AppError(400, "experimentId 必须是文本。 ");
+  return experimentId.trim() || undefined;
+}
+
 function readRows(body: Record<string, unknown>): NumericRow[] {
   if (!Array.isArray(body.rows)) throw new AppError(400, "rows must be an array.");
   return body.rows as NumericRow[];
@@ -140,7 +147,7 @@ async function handle(request: IncomingMessage, response: ServerResponse): Promi
   if (path === "/v1/ai/qa") {
     const question = readText(body, "question", 2_000);
     if (!question) throw new AppError(400, "question is required.");
-    const knowledge = await retrieveKnowledge(readExperimentId(body), question);
+    const knowledge = await retrieveKnowledge(readOptionalExperimentId(body), question);
     const answer = aiMode() === "local"
       ? await askLocalAssistant(knowledge, question)
       : aiMode() === "glm"

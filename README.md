@@ -7,7 +7,7 @@
 - `GET /health`：查看服务与 AI 配置状态。
 - `GET /v1/experiments`：获取已注册的真实验列表。
 - `POST /v1/analysis`：校验实验数据并运行确定性算法。
-- `POST /v1/ai/qa`：根据当前实验的知识库回答学生问题。
+- `POST /v1/ai/qa`：回答学生问题；`experimentId` 可选，传入时仅检索该实验，不传时检索全部实验资料。
 - `POST /v1/ai/report`：先运行算法，再生成供学生修改的报告草稿。
 - `POST /v1/ai/review`：先运行算法，再生成不给最终评分的审阅建议。
 
@@ -87,6 +87,8 @@ ALLOWED_ORIGIN=https://你的学生端域名
 ```
 
 Docker 镜像已打包当前知识库索引。云平台会提供 `PORT`，不必固定为 `8787`。学生端应通过服务端代理调用公网 AI 服务；可复制的 Next.js 路由样例位于 `integration/nextjs/`。
+
+如果学生端要在具体实验页面限制检索范围，不能把 Supabase 的自增 `experiments.id` 直接传给 AI 服务。请先执行 `integration/supabase/` 中的迁移和种子文件，再传稳定的 `experiments.knowledge_id`。详细映射说明见 `integration/supabase/README.md`。
 
 ## 请求示例
 
