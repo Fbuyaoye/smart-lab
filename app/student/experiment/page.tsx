@@ -1,6 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import {
+    Suspense,
+    useEffect,
+    useMemo,
+    useState,
+} from "react";
 import { useSearchParams } from "next/navigation";
 import {
     fitCurve,
@@ -412,7 +417,7 @@ function createPoints(
    页面
    ========================================================= */
 
-export default function ExperimentPage() {
+function ExperimentPageContent() {
     const searchParams = useSearchParams();
     const supabase = createClient();
 
@@ -2026,5 +2031,22 @@ function DataChart({
                 </text>
             </svg>
         </div>
+    );
+}
+export default function ExperimentPage() {
+    return (
+        <Suspense
+            fallback={
+                <main className="min-h-screen bg-slate-50 p-8">
+                    <div className="mx-auto max-w-7xl">
+                        <div className="rounded-2xl bg-white p-8 shadow-sm">
+                            正在加载实验……
+                        </div>
+                    </div>
+                </main>
+            }
+        >
+            <ExperimentPageContent />
+        </Suspense>
     );
 }
