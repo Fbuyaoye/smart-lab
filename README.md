@@ -1,32 +1,30 @@
-# Smart Lab AI Service
+# Smart Lab AI 服务
 
-This is a standalone TypeScript backend for the AI and algorithm layer. It does
-not modify or depend on the existing student or teacher projects.
+这是大学物理实验智能导师平台的独立 TypeScript 后端，负责 AI 问答、报告辅助和确定性数据算法。它不修改，也不依赖现有的学生端或教师端项目。
 
-It exposes four server-to-server endpoints:
+## 接口能力
 
-- `POST /v1/analysis`: validates experiment rows and runs the deterministic algorithm.
-- `POST /v1/ai/qa`: answers a student question from registered experiment context.
-- `POST /v1/ai/report`: runs the algorithm first, then drafts a report from its result.
-- `POST /v1/ai/review`: runs the algorithm first, then gives a teacher review without assigning a final grade.
+- `GET /health`：查看服务与 AI 配置状态。
+- `GET /v1/experiments`：获取已注册的真实验列表。
+- `POST /v1/analysis`：校验实验数据并运行确定性算法。
+- `POST /v1/ai/qa`：根据当前实验的知识库回答学生问题。
+- `POST /v1/ai/report`：先运行算法，再生成供学生修改的报告草稿。
+- `POST /v1/ai/review`：先运行算法，再生成不给最终评分的审阅建议。
 
-## Why the service has no default experiment
+## 为什么默认没有实验算法
 
-The existing repository contains only demonstration experiments. A misleading
-formula is worse than a missing formula, so this service deliberately rejects
-unknown `experimentId` values. Register one real experiment in
-`src/specs/index.ts` before using analysis or AI endpoints.
+现有资料中有演示实验，但真实验的公式、数据字段、单位和判定阈值需要由教师确认。错误公式比没有公式更危险，因此未知的 `experimentId` 会被服务拒绝。接入数据分析前，请在 `src/specs/index.ts` 注册一个审核通过的真实验定义。
 
 ```ts
 import type { ExperimentSpec } from "../domain.js";
 
 const realExperiment: ExperimentSpec = {
-  id: "replace-with-real-experiment-id",
+  id: "real-experiment-id",
   version: 1,
-  name: "Replace with the real experiment name",
+  name: "真实验名称",
   fields: [
-    { key: "x", label: "Independent measurement", unit: "unit", required: true },
-    { key: "y", label: "Dependent measurement", unit: "unit", required: true },
+    { key: "x", label: "自变量测量值", unit: "单位", required: true },
+    { key: "y", label: "因变量测量值", unit: "单位", required: true },
   ],
   analysis: {
     kind: "linear-regression",
@@ -36,21 +34,19 @@ const realExperiment: ExperimentSpec = {
     minR2: 0.98,
   },
   aiContext: {
-    principle: "Write the approved experiment principle.",
-    procedure: "Write the approved procedure.",
-    commonIssues: "Write known mistakes and unit rules.",
+    principle: "填写教师审核通过的实验原理。",
+    procedure: "填写教师审核通过的实验步骤。",
+    commonIssues: "填写常见错误、单位和注意事项。",
   },
-  reportSections: ["purpose", "method", "analysis", "error discussion", "conclusion"],
+  reportSections: ["实验目的", "实验方法", "数据处理", "误差分析", "实验结论"],
 };
 
 registerExperiment(realExperiment);
 ```
 
-Keep the physical formula, allowed ranges, units, and fitting convention in the
-specification review. The AI receives the calculation output but is instructed
-not to recompute or replace it.
+算法输出是唯一可信的数值来源；AI 只解释结果，不能修改或重新计算数值。
 
-## Run
+## 本机运行
 
 ```bash
 npm install
@@ -58,82 +54,52 @@ cp .env.example .env
 npm run dev
 ```
 
-Set a long, random `INTERNAL_API_TOKEN`. Browser applications must call their
-own server route, which then calls this service with
-`Authorization: Bearer <INTERNAL_API_TOKEN>`. Do not call this service directly
-from a browser.
+在 `.env` 中设置随机且足够长的 `INTERNAL_API_TOKEN`。浏览器不能直接调用本服务，应由学生端或教师端的服务端路由携带 `Authorization: Bearer <INTERNAL_API_TOKEN>` 转发请求。
 
-## Local AI mode: no DeepSeek, no API key
+浏览器请访问 [http://localhost:8787/health](http://localhost:8787/health)，不要访问 `0.0.0.0:8787`。本服务是后端接口，不提供聊天页面。
 
-The default `AI_MODE=local` trains and runs a small local intent model with
-multinomial Naive Bayes. Its response is composed strictly from the current
-experiment's retrieved knowledge-base excerpts. Reports and reviews are local
-templates which quote the deterministic calculation result. It never makes a
-network AI call and no student data leaves this computer.
+## GLM 模式
+
+`AI_MODE=glm` 时，服务端使用 `GLM_API_KEY` 调用智谱 GLM。默认模型是 `glm-4-flash`，默认接口为智谱的 Chat Completions 地址。密钥只存在于服务端，绝不能放在浏览器代码或提交到 Git。
+
+## 本地 AI 模式
+
+`AI_MODE=local` 时，可训练并运行轻量的朴素贝叶斯意图识别模型。回答仅从当前实验的知识库片段中组织，报告和审阅使用本地模板，不会调用外部 AI 服务。
 
 ```bash
 npm run train:local
 npm run dev
 ```
 
-The included model is trained from `training/intent-training.json`. Add checked
-teaching utterances there and run `npm run train:local` again to retrain it.
-This is a real, inspectable classifier for this project domain, but it is not a
-general-purpose large language model: it cannot invent a missing procedure,
-formula, or judgment. Import the school's approved experiment guides into the
-knowledge base before relying on it in class.
+训练样本位于 `training/intent-training.json`。补充经过教师审核的学生提问样本后，重新运行 `npm run train:local` 即可训练模型。它不是通用大语言模型，不能补造缺失的操作步骤、公式或评分结论。
 
-## GLM mode
+## 公网部署
 
-Set `AI_MODE=glm`, `GLM_API_KEY`, and optionally `GLM_MODEL` to call Zhipu AI
-from the server. The default endpoint is Zhipu's official chat-completions URL.
-The browser never receives this key. `AI_MODE=deepseek` is also available as an
-explicit alternative.
-
-## Deploy for online use
-
-The service includes a `Dockerfile`; deploy this directory to Railway, Render,
-or any Docker-capable cloud host. Do not upload `.env` or commit it to Git.
-Instead, add these variables in the cloud host's secret/settings panel:
+目录中已包含 `Dockerfile`，可部署到 Railway、Render 或任意支持 Docker 的云平台。不要上传或提交 `.env`；请在云平台的环境变量面板中配置：
 
 ```text
 AI_MODE=glm
-GLM_API_KEY=your-key
+GLM_API_KEY=你的智谱密钥
 GLM_MODEL=glm-4-flash
 GLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4/chat/completions
-INTERNAL_API_TOKEN=a-long-random-server-to-server-token
-ALLOWED_ORIGIN=https://your-student-site.example
+INTERNAL_API_TOKEN=随机且足够长的服务间令牌
+ALLOWED_ORIGIN=https://你的学生端域名
 ```
 
-The Docker image includes the current knowledge-base index. Expose the
-platform-provided `PORT`. In the student project, use a server-side API route
-as a proxy: the browser calls the student site, and that route calls this
-public service with `Authorization: Bearer <INTERNAL_API_TOKEN>`. Never place
-`GLM_API_KEY` or `INTERNAL_API_TOKEN` in browser-side code.
+Docker 镜像已打包当前知识库索引。云平台会提供 `PORT`，不必固定为 `8787`。学生端应通过服务端代理调用公网 AI 服务；可复制的 Next.js 路由样例位于 `integration/nextjs/`。
 
-The ready-to-copy Next.js route and its environment-variable example are under
-`integration/nextjs/`. Add that route only after choosing the student project's
-final Next.js integration location.
+## 请求示例
 
-## Example request
-
-After registering a real experiment:
+注册真实验后，可调用确定性分析接口：
 
 ```bash
 curl http://localhost:8787/v1/analysis \
   -H "Authorization: Bearer $INTERNAL_API_TOKEN" \
   -H "Content-Type: application/json" \
-  --data '{"experimentId":"replace-with-real-experiment-id","rows":[{"x":1,"y":2},{"x":2,"y":4},{"x":3,"y":6}]}'
+  --data '{"experimentId":"real-experiment-id","rows":[{"x":1,"y":2},{"x":2,"y":4},{"x":3,"y":6}]}'
 ```
 
-## Integration boundary
-
-The existing teacher and student projects should save raw data and the returned
-`analysis` object in Supabase. The teacher project should call this service from
-a server-side route only. The algorithm is deterministic and testable; ECharts
-or other chart libraries should only render `analysis.result.points`.
-
-## Verification
+## 验证
 
 ```bash
 npm run typecheck
