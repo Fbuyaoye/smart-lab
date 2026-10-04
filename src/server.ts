@@ -8,7 +8,7 @@ import { analyzeExperiment } from "./services/analysis.js";
 import { askDeepSeek } from "./services/deepseek.js";
 import { askGlm } from "./services/glm.js";
 import { askLocalAssistant, draftLocalReport, reviewLocalReport } from "./services/local-ai.js";
-import { qaKnowledgeMessages, reportMessages, reviewMessages } from "./services/prompts.js";
+import { knowledgeReportDraftMessages, qaKnowledgeMessages, reportMessages, reviewMessages } from "./services/prompts.js";
 import { retrieveKnowledge } from "./services/knowledge.js";
 
 const MAX_BODY_BYTES = 1_000_000;
@@ -122,6 +122,58 @@ function readHistory(body: Record<string, unknown>): Array<{ role: "assistant" |
   });
 }
 
+type ReportDraftKey = "purpose" | "principle" | "apparatus" | "procedure" | "dataAnalysis" | "results" | "errorAnalysis" | "conclusion";
+const reportDraftKeys: ReportDraftKey[] = ["purpose", "principle", "apparatus", "procedure", "dataAnalysis", "results", "errorAnalysis", "conclusion"];
+
+function readRawData(body: Record<string, unknown>): Array<{ x: number | string; y: number | string }> {
+  const value = body.rawData;
+  if (value === undefined) return [];
+  if (!Array.isArray(value) || value.length > 200) throw new AppError(400, "rawData 必须是最多 200 行的数组。 ");
+  return value.map((item, index) => {
+    if (typeof item !== "object" || item === null || Array.isArray(item)) throw new AppError(400, `rawData 第 ${index + 1} 行无效。`);
+    const row = item as Record<string, unknown>;
+    const x = row.x;
+    const y = row.y;
+    if ((typeof x !== "string" && typeof x !== "number") || (typeof y !== "string" && typeof y !== "number")) {
+      throw new AppError(400, `rawData 第 ${index + 1} 行必须包含 x 和 y。`);
+    }
+    return { x, y };
+  });
+}
+
+function readMetadata(body: Record<string, unknown>): Record<string, string> {
+  const value = body.metadata;
+  if (value === undefined) return {};
+  if (typeof value !== "object" || value === null || Array.isArray(value)) throw new AppError(400, "metadata 必须是对象。 ");
+  return Object.fromEntries(Object.entries(value).map(([key, item]) => {
+    if (typeof item !== "string" || item.length > 500) throw new AppError(400, `metadata.${key} 必须是长度不超过 500 的文本。`);
+    return [key, item.trim()];
+  }));
+}
+
+function parseReportDraft(value: string): Partial<Record<ReportDraftKey, string>> {
+  const normalized = value.trim().replace(/^```(?:json)?\s*|\s*```$/g, "");
+  const start = normalized.indexOf("{");
+  const end = normalized.lastIndexOf("}");
+  const candidate = start >= 0 && end > start ? normalized.slice(start, end + 1) : normalized;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(candidate);
+  } catch {
+    throw new AppError(502, "GLM 返回的报告草稿格式无效，请重试。 ");
+  }
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+    throw new AppError(502, "GLM 返回的报告草稿格式无效，请重试。 ");
+  }
+  const result: Partial<Record<ReportDraftKey, string>> = {};
+  for (const key of reportDraftKeys) {
+    const section = (parsed as Record<string, unknown>)[key];
+    if (typeof section === "string" && section.length <= 8_000) result[key] = section.trim();
+  }
+  if (Object.keys(result).length === 0) throw new AppError(502, "GLM 未返回有效报告章节，请重试。 ");
+  return result;
+}
+
 async function handle(request: IncomingMessage, response: ServerResponse): Promise<void> {
   addCorsHeaders(request, response);
   if (request.method === "OPTIONS") return sendJson(response, 204, {});
@@ -154,6 +206,24 @@ async function handle(request: IncomingMessage, response: ServerResponse): Promi
         ? await askGlm(qaKnowledgeMessages(knowledge, question, readHistory(body)))
         : await askDeepSeek(qaKnowledgeMessages(knowledge, question, readHistory(body)));
     return sendJson(response, 200, { answer });
+  }
+
+  if (path === "/v1/ai/report-draft") {
+    const experimentId = readExperimentId(body);
+    const studentNotes = readText(body, "studentNotes", 10_000);
+    const analysisSummary = readText(body, "analysisSummary", 10_000);
+    const knowledge = await retrieveKnowledge(experimentId, `${analysisSummary}\n${studentNotes}`);
+    if (aiMode() === "local") {
+      throw new AppError(503, "AI 报告草稿需要配置 GLM 或 DeepSeek 模式。 ");
+    }
+    const messages = knowledgeReportDraftMessages(knowledge, {
+      metadata: readMetadata(body),
+      rawData: readRawData(body),
+      analysisSummary,
+      studentNotes,
+    });
+    const content = aiMode() === "glm" ? await askGlm(messages) : await askDeepSeek(messages);
+    return sendJson(response, 200, { draft: parseReportDraft(content) });
   }
 
   const spec = readExperiment(body);
