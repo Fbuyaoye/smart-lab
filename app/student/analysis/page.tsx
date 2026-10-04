@@ -1,6 +1,7 @@
 "use client";
 
 import { CurveFitWorkbench } from "@smart-lab/curve-fit-toolkit";
+import "@smart-lab/curve-fit-toolkit/style.css";
 
 export default function AnalysisPage() {
     return (
