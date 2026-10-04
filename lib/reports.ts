@@ -16,7 +16,7 @@ export type ReportRow = {
   tasks: {
     class_id: number;
     classes: { name: string } | null;
-    experiments: { name: string } | null;
+    experiments: { id: number; name: string; knowledge_id?: string | null } | null;
   } | null;
   users: { name: string } | null;
 };

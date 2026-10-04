@@ -6,7 +6,7 @@
 
 本次项目：`cvznriztyfugjrgubobj`。Project URL 为 `https://cvznriztyfugjrgubobj.supabase.co`。
 控制台入口：[打开 SQL Editor](https://supabase.com/dashboard/project/cvznriztyfugjrgubobj/sql)。
-`.env.local` 被 Git 忽略，不随代码同步；新检出的项目需重新填写 URL 和 publishable key（也兼容 `NEXT_PUBLIC_SUPABASE_ANON_KEY`）。部署平台的环境变量需单独填写，然后重新构建和部署。`DEEPSEEK_API_KEY` 可留空，仅影响 AI 批改，不影响登录和报告读取。
+`.env.local` 被 Git 忽略，不随代码同步；新检出的项目需重新填写 URL 和 publishable key（也兼容 `NEXT_PUBLIC_SUPABASE_ANON_KEY`）。部署平台的环境变量需单独填写，然后重新构建和部署。教师端 AI 批改优先配置 `AI_SERVICE_URL` 和 `AI_SERVICE_TOKEN`；模型密钥和服务间令牌只放服务端环境变量。
 
 ## 1. 先确认项目和备份
 
@@ -28,7 +28,8 @@
 1. `supabase/migrations/001_init.sql`（全新项目才需要；已有项目跳过已经执行过的迁移；部分表缺失时先核对 preflight，避免覆盖现有结构）。
 2. `supabase/migrations/002_hardening.sql`（全新项目执行；已有项目确认以前已执行过，不要仅凭两个时间列存在就认定全部策略和触发器都已应用）。
 3. `supabase/migrations/003_security_and_integrity.sql`。
-4. `supabase/seed.sql`。
+4. `supabase/migrations/004_experiment_knowledge_id.sql`（接入教师端 AI 批改时执行，为实验补充稳定知识库标识）。
+5. `supabase/seed.sql`。
 
 每个文件新建一个 SQL 查询，复制文件全部内容后运行，不要只复制中间一段。003 自带 `begin/commit`，如果报错，记录完整错误并停止执行后续脚本；不要为了通过而删去出错语句。
 
