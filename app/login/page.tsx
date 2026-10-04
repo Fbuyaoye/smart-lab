@@ -1,10 +1,10 @@
 "use client";
 
 import React from "react";
-import { createClient } from "@/lib/supabase/browser";
+import { loginWithStudentId } from "./actions";
 
 export default function LoginPage() {
-    const supabase = createClient();
+    //const supabase = createClient();
     const [studentId, setStudentId] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [error, setError] = React.useState("");
@@ -184,22 +184,15 @@ export default function LoginPage() {
                                         return;
                                     }
 
-                                    if (!supabase) {
-                                        setError("Supabase 未配置");
-                                        return;
-                                    }
-
                                     setError("");
 
-                                    const { error } =
-                                        await supabase.auth.signInWithPassword({
-                                            email: studentId,
-                                            password,
-                                        });
+                                    const result = await loginWithStudentId(
+                                        studentId,
+                                        password
+                                    );
 
-                                    if (error) {
-                                        console.error("登录失败:", error);
-                                        setError(error.message);
+                                    if (result.error) {
+                                        setError(result.error);
                                         return;
                                     }
 
