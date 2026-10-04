@@ -1,5 +1,8 @@
 "use client";
 
+import { ExperimentReportWorkbench } from "@smart-lab/experiment-report-toolkit";
+//import "@smart-lab/experiment-report-toolkit/style.css";
+import "./report-toolkit.css";
 import {
     Suspense,
     useEffect,
@@ -780,6 +783,15 @@ function ExperimentPageContent() {
             ) / values.length
         );
     }, [calculatedRows]);
+
+    const reportRawData = useMemo(
+        () =>
+            validData.map((row) => ({
+                x: row.x,
+                y: row.y,
+            })),
+        [validData],
+    );
 
     /* =======================================================
        数据操作
