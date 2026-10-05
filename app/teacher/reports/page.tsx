@@ -10,7 +10,7 @@ const reportColumns = "id,task_id,student_id,status,teacher_score,teacher_commen
 const legacyReportColumns = "id,task_id,student_id,status,teacher_score,teacher_comment,ai_suggestion,ai_content,final_content,raw_data,calculation,created_at,submitted_at,graded_at,users(name),tasks(class_id,classes(name),experiments(id,name))";
 
 const experimentKnowledgeIds: Record<string, string> = {
-  "用伏安法测电阻": "resistance-voltammetry", "单摆法测重力加速度": "simple-pendulum-gravity", "薄透镜焦距测量": "thin-lens-focal-length",
+  "用伏安法测电阻": "voltammetry", "单摆法测重力加速度": "simple-pendulum-gravity", "薄透镜焦距测量": "thin-lens-focal-length",
   "光电效应": "photoelectric-effect", "伏安特性": "voltammetry", "霍尔效应": "hall-effect",
   "空气比热容比的测定": "air-specific-heat-ratio", "示波器的使用": "oscilloscope", "液晶电光效应": "liquid-crystal-electro-optic",
   "拉伸法测杨氏模量": "tensile-young-modulus", "动力学法测杨氏模量": "dynamic-young-modulus", "电位差计": "potentiometer",
@@ -24,7 +24,9 @@ type ExperimentInfo = { id: number; name: string; knowledge_id?: string | null }
 
 function experimentId(report: ReportRow): string {
   const experiment = report.tasks?.experiments as (ExperimentInfo | null) | null;
-  return experiment?.knowledge_id?.trim() || experimentKnowledgeIds[experiment?.name ?? ""] || `supabase-experiment-${experiment?.id ?? report.task_id}`;
+  // The AI knowledge base owns the stable IDs. Prefer the explicit course-name
+  // mapping so older seed rows cannot send a local-only ID to the AI service.
+  return experimentKnowledgeIds[experiment?.name ?? ""] || experiment?.knowledge_id?.trim() || `supabase-experiment-${experiment?.id ?? report.task_id}`;
 }
 
 function parseAiReview(value: string | null): AiReview | null {

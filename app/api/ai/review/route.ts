@@ -87,7 +87,16 @@ export async function POST(request: Request) {
         body: JSON.stringify({ experimentId: input.experimentId, rawData: input.rawData, calculation: input.calculation, finalContent: input.finalContent }), signal: controller.signal, cache: "no-store",
       });
       const payload = await upstream.json().catch(() => ({}));
-      if (!upstream.ok) return NextResponse.json({ error: payload.error ?? "AI 服务请求失败。" }, { status: 502 });
+      if (!upstream.ok) {
+        const upstreamError = typeof payload.error === "string" ? payload.error : "AI 服务请求失败。";
+        if (upstreamError.includes("实验知识库尚未构建") || upstreamError.includes("无法读取")) {
+          return NextResponse.json({ error: "AI 服务已连接，但 Railway 上的实验知识库索引不可读。请在 AI 服务部署中确认 knowledge-base/index.json 已打包，并设置 KNOWLEDGE_BASE_INDEX_PATH=knowledge-base/index.json 后重新部署。" }, { status: 503 });
+        }
+        if (upstream.status === 404 && upstreamError.includes("当前实验尚未录入")) {
+          return NextResponse.json({ error: `AI 服务知识库没有收录实验“${input.experimentId}”。请使用知识库中的稳定实验标识，或先把该实验资料加入 AI 服务知识库。` }, { status: 422 });
+        }
+        return NextResponse.json({ error: upstreamError }, { status: 502 });
+      }
       review = parseReviewText(payload.review ?? payload.reviewDraft ?? payload.draft ?? payload.output_text ?? payload.response);
     } else if (modelConfig) {
       provider = modelConfig.provider;

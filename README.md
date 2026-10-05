@@ -20,6 +20,8 @@ npm run dev
 
 当前 Supabase 项目地址为 `https://cvznriztyfugjrgubobj.supabase.co`，公开 key 从同一项目的 **Settings → API Keys** 获取，或使用学生端已有的相同公开配置。修改后重启开发服务。教师端的报告检查页已接入 `teacher-review-toolkit`：优先通过服务端 `AI_SERVICE_URL` 和 `AI_SERVICE_TOKEN` 调用 AI 服务的 `/v1/ai/review-draft`，也可用 `TEACHER_REVIEW_API_URL`、`TEACHER_REVIEW_API_KEY`、`TEACHER_REVIEW_MODEL` 连接 OpenAI 兼容推理服务，最后兼容回退到 `DEEPSEEK_API_KEY`。模型密钥和服务间令牌只放服务端环境变量。
 
+Railway 上的 AI 服务必须把知识库索引一起部署。使用 `origin/ai-service` 中的 Dockerfile 时会复制 `knowledge-base/index.json`；如果使用 Nixpacks 或自定义启动命令，请在 Railway 环境变量中设置 `KNOWLEDGE_BASE_INDEX_PATH=knowledge-base/index.json`，并确认部署根目录包含该文件。修改后需要重新部署 AI 服务。
+
 如果报错发生在线上网站，需在部署平台设置上述两项环境变量，并重新构建和部署；本地 `.env.local` 不会上传到部署平台。Next.js 在构建时写入 `NEXT_PUBLIC_*` 配置，仅刷新浏览器不会更新它们。
 
 在 Supabase SQL Editor 依次执行：
