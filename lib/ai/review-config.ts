@@ -38,8 +38,11 @@ export function getReviewModelConfig(): ReviewModelConfig | null {
 
 export function getReviewModelConfigurationError() {
   if (getReviewModelConfig()) return "";
-  if (process.env.TEACHER_REVIEW_API_URL && !process.env.TEACHER_REVIEW_MODEL) {
+  if (process.env.AI_SERVICE_URL?.trim() && !process.env.AI_SERVICE_TOKEN?.trim()) {
+    return "已配置 AI_SERVICE_URL，但缺少 AI_SERVICE_TOKEN。请填写 AI 服务的服务间令牌并重启开发服务。";
+  }
+  if (process.env.TEACHER_REVIEW_API_URL?.trim() && !process.env.TEACHER_REVIEW_MODEL?.trim()) {
     return "已配置教师评阅模型地址，但缺少 TEACHER_REVIEW_MODEL。";
   }
-  return "尚未配置教师评阅模型。请配置 teacher-review-toolkit 的 API 地址、模型名和密钥。";
+  return "尚未配置教师评阅模型。请至少配置 AI_SERVICE_URL + AI_SERVICE_TOKEN，或 DEEPSEEK_API_KEY；修改 .env.local 后重启开发服务。";
 }

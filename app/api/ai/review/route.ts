@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getReviewModelConfig } from "@/lib/ai/review-config";
+import { getReviewModelConfig, getReviewModelConfigurationError } from "@/lib/ai/review-config";
 import type { AiReview } from "@/lib/teacher-review-toolkit/types";
 
 const MAX_CONTENT_LENGTH = 10_000;
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
   const serviceUrl = process.env.AI_SERVICE_URL?.trim();
   const serviceToken = process.env.AI_SERVICE_TOKEN?.trim();
   const modelConfig = getReviewModelConfig();
-  if (!serviceUrl && !modelConfig) return NextResponse.json({ error: "教师评阅模型尚未配置，请联系管理员。" }, { status: 503 });
+  if (!serviceUrl && !modelConfig) return NextResponse.json({ error: getReviewModelConfigurationError() }, { status: 503 });
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30_000);

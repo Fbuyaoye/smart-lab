@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getReviewModelConfig } from "@/lib/ai/review-config";
+import { getReviewModelConfig, getReviewModelConfigurationError } from "@/lib/ai/review-config";
 
 export async function POST(request:Request){
-  const supabase=createClient();const modelConfig=getReviewModelConfig();if(!supabase)return NextResponse.json({error:"Supabase 尚未配置。"},{status:500});if(!modelConfig)return NextResponse.json({error:"教师评阅模型尚未配置，请联系管理员。"},{status:503});
+  const supabase=createClient();const modelConfig=getReviewModelConfig();if(!supabase)return NextResponse.json({error:"Supabase 尚未配置。"},{status:500});if(!modelConfig)return NextResponse.json({error:getReviewModelConfigurationError()},{status:503});
   const {data:{user}}=await supabase.auth.getUser();if(!user)return NextResponse.json({error:"请先登录教师账号。"},{status:401});const body=await request.json().catch(()=>({}));const reportId=Number(body.reportId);if(!Number.isInteger(reportId))return NextResponse.json({error:"reportId 无效。"},{status:400});
   const { data: isTeacher, error: roleError } = await supabase.rpc("is_teacher");
   if (roleError || !isTeacher) return NextResponse.json({error:"只有教师账号可以使用 AI 批改。"},{status:403});
