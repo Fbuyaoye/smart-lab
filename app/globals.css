@@ -15,6 +15,15 @@ h1 { font-size:clamp(26px,4vw,38px); line-height:1.2; margin:0; } h2 { font-size
 .muted { color:var(--muted); } .small { font-size:13px; } .grid { display:grid; gap:18px; } .stats-grid { grid-template-columns:repeat(3,minmax(0,1fr)); margin-bottom:24px; } .two-col { grid-template-columns:minmax(0,1fr) minmax(280px,.65fr); }
 .card { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:22px; box-shadow:0 8px 24px rgba(31,48,90,.04); }
 .settings-card { max-width:640px; }
+.task-publish-layout { align-items:start; display:grid; gap:18px; grid-template-columns:minmax(0,.9fr) minmax(320px,1.1fr); }
+.task-content-preview { min-width:0; position:sticky; top:24px; }
+.task-content-preview .card-header { align-items:flex-start; }
+.task-content-preview .card-header p { margin:6px 0 0; }
+.experiment-detail { display:grid; gap:16px; }
+.experiment-detail h3 { border-bottom:1px solid var(--line); padding-bottom:12px; }
+.experiment-detail-section { background:#f8faff; border-radius:9px; padding:12px 14px; }
+.experiment-detail-section strong { display:block; font-size:13px; }
+.experiment-detail-section p { color:#475369; font-size:14px; line-height:1.7; margin:7px 0 0; white-space:pre-wrap; }
 .filter-controls { display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
 .filter-controls select { min-width:118px; }
 .sr-only { height:1px; margin:-1px; overflow:hidden; position:absolute; width:1px; clip:rect(0,0,0,0); white-space:nowrap; }
@@ -46,5 +55,6 @@ h1 { font-size:clamp(26px,4vw,38px); line-height:1.2; margin:0; } h2 { font-size
 .report-metrics dt { color:var(--muted); font-size:12px; }
 .report-metrics dd { font-size:14px; margin:5px 0 0; }
 @media (max-width:1100px) { .report-layout { grid-template-columns:1fr; } }
+@media (max-width:900px) { .task-publish-layout { grid-template-columns:1fr; } .task-content-preview { position:static; } }
 @media (max-width:820px) { .app-shell { display:block; } .sidebar { width:auto; } .nav { grid-template-columns:repeat(4,minmax(0,1fr)); } .nav a { font-size:13px; padding:9px; text-align:center; } .sidebar-footer { display:none; } .stats-grid,.two-col { grid-template-columns:1fr; } }
 @media (max-width:520px) { .main { padding:24px 14px; } .topbar { display:block; } .topbar .button { margin-top:14px; } .nav { grid-template-columns:repeat(2,1fr); } }
