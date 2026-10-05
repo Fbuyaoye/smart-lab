@@ -16,6 +16,56 @@ function json(value: unknown): string {
   return typeof value === "string" ? value : JSON.stringify(value, null, 2);
 }
 
+const reportSectionTitles: Record<string, string> = {
+  "实验目的": "一、实验目的",
+  "实验原理": "二、实验原理",
+  "实验仪器与装置": "三、实验仪器",
+  "实验仪器": "三、实验仪器",
+  "实验步骤": "四、实验步骤",
+  "数据处理与分析": "五、数据记录与处理",
+  "数据记录与处理": "五、数据记录与处理",
+  "实验结果": "六、实验结果",
+  "误差分析": "七、误差分析",
+  "实验结论": "八、实验结论",
+};
+
+function reportSections(content: string) {
+  const sections: Array<{ title: string; content: string }> = [];
+  const marker = /【([^】]+)】/g;
+  const matches = Array.from(content.matchAll(marker));
+  if (!matches.length) return sections;
+  matches.forEach((match, index) => {
+    const rawTitle = match[1].trim();
+    const start = (match.index ?? 0) + match[0].length;
+    const end = matches[index + 1]?.index ?? content.length;
+    sections.push({
+      title: reportSectionTitles[rawTitle] ?? rawTitle,
+      content: content.slice(start, end).trim(),
+    });
+  });
+  return sections;
+}
+
+function StudentReportDocument({ report }: { report: TeacherReport }) {
+  const sections = reportSections(report.finalContent);
+  return <article className="teacher-review-paper teacher-review-document">
+    <header className="teacher-review-document-header">
+      <p>大学物理实验</p>
+      <h3>实验报告</h3>
+      <h4>{report.experimentName}</h4>
+      <dl>
+        <div><dt>姓名</dt><dd>{report.studentName}</dd></div>
+        <div><dt>班级</dt><dd>{report.className}</dd></div>
+      </dl>
+    </header>
+    {sections.length ? <div className="teacher-review-document-sections">{sections.map((section, index) => <section key={`${section.title}-${index}`}>
+      <h5>{section.title}</h5>
+      <p>{section.content || "暂无内容"}</p>
+    </section>)}</div> : <p className="teacher-review-document-fallback">{report.finalContent || "学生尚未填写最终实验报告。"}</p>}
+    <footer>本报告由学生根据实验原始记录整理，AI 内容须经学生核对。</footer>
+  </article>;
+}
+
 export function TeacherReviewWorkbench({ reports, requestAiReview = createAiReviewClient(), onSave }: TeacherReviewWorkbenchProps) {
   const [status, setStatus] = useState<ReviewStatus | "all">("submitted");
   const [query, setQuery] = useState("");
@@ -113,7 +163,7 @@ export function TeacherReviewWorkbench({ reports, requestAiReview = createAiRevi
               <button className={tab === "ai" ? "active" : ""} onClick={() => setTab("ai")}>AI 审阅{activeReview && <i />}</button>
             </nav>
 
-            {tab === "report" && <article className="teacher-review-paper"><h3>学生提交的实验报告</h3><div>{selected.finalContent || "学生尚未填写最终报告。"}</div></article>}
+            {tab === "report" && <StudentReportDocument report={selected} />}
             {tab === "data" && <div className="teacher-review-data-grid"><article><h3>原始数据</h3><pre>{json(selected.rawData)}</pre></article><article><h3>计算结果</h3><pre>{json(selected.calculation)}</pre></article></div>}
             {tab === "ai" && <AiReviewPanel review={activeReview} />}
 
