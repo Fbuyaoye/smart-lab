@@ -1,10 +1,11 @@
 import type { RequestAiReview, TeacherReport } from "./types";
 
-export function createAiReviewClient(endpoint = "/api/ai/review"): RequestAiReview {
+export function createAiReviewClient(endpoint = "/api/ai/review", getAccessToken?: () => Promise<string | undefined>): RequestAiReview {
   return async (report: TeacherReport) => {
+    const accessToken = await getAccessToken?.();
     const response = await fetch(endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) },
       body: JSON.stringify({ reportId: report.id, experimentId: report.experimentId, rawData: report.rawData, calculation: report.calculation, finalContent: report.finalContent }),
     });
     const payload = await response.json().catch(() => ({})) as { review?: unknown; error?: unknown };

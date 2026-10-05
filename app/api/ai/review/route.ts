@@ -55,7 +55,9 @@ async function readBody(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const supabase = createClient();
+  const authorization = request.headers.get("authorization") ?? "";
+  const accessToken = authorization.replace(/^Bearer\s+/i, "").trim() || undefined;
+  const supabase = createClient(accessToken);
   if (!supabase) return NextResponse.json({ error: "Supabase 尚未配置。" }, { status: 500 });
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "请先登录教师账号。" }, { status: 401 });

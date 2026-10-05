@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/browser";
 import { reportClass, reportTitle, type ReportRow } from "@/lib/reports";
 import { TeacherReviewWorkbench } from "@/lib/teacher-review-toolkit/TeacherReviewWorkbench";
+import { createAiReviewClient } from "@/lib/teacher-review-toolkit/client";
 import type { AiReview, TeacherReport } from "@/lib/teacher-review-toolkit/types";
 
 const reportColumns = "id,task_id,student_id,status,teacher_score,teacher_comment,ai_suggestion,ai_content,final_content,raw_data,calculation,created_at,submitted_at,graded_at,users(name),tasks(class_id,classes(name),experiments(id,name,knowledge_id))";
@@ -99,6 +100,11 @@ export default function ReportsPage() {
   }, [loadReports]);
 
   const teacherReports = useMemo(() => reports.map(toTeacherReport), [reports]);
+  const requestAiReview = useMemo(() => createAiReviewClient("/api/ai/review", async () => {
+    if (!supabase) return undefined;
+    const { data } = await supabase.auth.getSession();
+    return data.session?.access_token;
+  }), [supabase]);
 
   async function saveTeacherReview(input: { reportId: string | number; score: number; comment: string; aiReview?: AiReview | null }) {
     if (!supabase) throw new Error("请先配置 Supabase 环境变量。");
@@ -115,6 +121,6 @@ export default function ReportsPage() {
     <header className="topbar"><div><p className="eyebrow">Report review</p><h1>报告检查</h1><p className="muted">使用 teacher-review-toolkit 检查实验报告，AI 只提供审阅建议，最终评分由教师确认。</p></div><button className="button secondary" onClick={() => void loadReports()} disabled={refreshing}>{refreshing ? "刷新中…" : "刷新报告"}</button></header>
     {loadError && <div className="alert error" role="alert">报告刷新失败：{loadError}{lastUpdated && " 当前显示上次成功加载的内容。"}</div>}
     {lastUpdated && <p className="muted small">共 {reports.length} 份报告 · 最近更新 {lastUpdated.toLocaleTimeString("zh-CN")}</p>}
-    {loading ? <div className="card empty">正在加载报告…</div> : teacherReports.length ? <TeacherReviewWorkbench reports={teacherReports} onSave={saveTeacherReview} /> : <div className="card empty">暂未收到本班学生的报告。</div>}
+    {loading ? <div className="card empty">正在加载报告…</div> : teacherReports.length ? <TeacherReviewWorkbench reports={teacherReports} requestAiReview={requestAiReview} onSave={saveTeacherReview} /> : <div className="card empty">暂未收到本班学生的报告。</div>}
   </>;
 }
