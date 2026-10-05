@@ -1,6 +1,9 @@
 "use client";
 
-import { ExperimentReportWorkbench } from "@smart-lab/experiment-report-toolkit";
+import {
+    ExperimentReportWorkbench,
+    generateReportPdf,
+} from "@smart-lab/experiment-report-toolkit";
 //import "@smart-lab/experiment-report-toolkit/style.css";
 import "./report-toolkit.css";
 import {
@@ -454,6 +457,9 @@ function ExperimentPageContent() {
 
     const [submitted, setSubmitted] =
         useState(false);
+
+    const [reportElement, setReportElement] =
+        useState<HTMLDivElement | null>(null);
 
     /* =======================================================
       taskId
@@ -953,8 +959,14 @@ function ExperimentPageContent() {
             return;
         }
 
+        if (!reportElement) {
+            setError("实验报告尚未准备完成，请先进入报告页面确认报告内容");
+            return;
+        }
+
         try {
             setError("");
+            setSubmitted(false);
 
             /* =====================================================
                1. 获取当前登录学生
@@ -1008,7 +1020,7 @@ function ExperimentPageContent() {
             };
 
             /* =====================================================
-               4. 检查当前学生是否已经有这份实验报告
+               4. 获取当前学生已有报告
                ===================================================== */
 
             const {
@@ -1016,7 +1028,7 @@ function ExperimentPageContent() {
                 error: existingReportError,
             } = await supabase
                 .from("reports")
-                .select("id")
+                .select("id, pdf_path")
                 .eq("task_id", taskId)
                 .eq("student_id", user.id)
                 .maybeSingle();
@@ -1026,9 +1038,39 @@ function ExperimentPageContent() {
             }
 
             /* =====================================================
-               5. 已有报告 → 更新
-               没有报告 → 新建
+               5. 生成最终 PDF
                ===================================================== */
+
+            const pdfBlob = await generateReportPdf(
+                reportElement,
+                experiment?.name ?? "大学物理实验",
+                user.user_metadata?.name ?? ""
+            );
+
+            /* =====================================================
+               6. 上传 PDF 到 Supabase Storage
+               ===================================================== */
+
+            const pdfPath = `${user.id}/${taskId}.pdf`;
+
+            const {
+                error: uploadError,
+            } = await supabase.storage
+                .from("experiment-reports")
+                .upload(pdfPath, pdfBlob, {
+                    contentType: "application/pdf",
+                    upsert: true,
+                });
+
+            if (uploadError) {
+                throw uploadError;
+            }
+
+            /* =====================================================
+               7. 写入 reports 表
+               ===================================================== */
+
+            const submittedAt = new Date().toISOString();
 
             if (existingReport) {
                 const { error: updateError } = await supabase
@@ -1038,7 +1080,9 @@ function ExperimentPageContent() {
                         calculation,
                         ai_content: aiReport || null,
                         final_content: aiReport || null,
+                        pdf_path: pdfPath,
                         status: "submitted",
+                        submitted_at: submittedAt,
                     })
                     .eq("id", existingReport.id)
                     .eq("student_id", user.id);
@@ -1056,7 +1100,9 @@ function ExperimentPageContent() {
                         calculation,
                         ai_content: aiReport || null,
                         final_content: aiReport || null,
+                        pdf_path: pdfPath,
                         status: "submitted",
+                        submitted_at: submittedAt,
                     });
 
                 if (insertError) {
@@ -1065,7 +1111,7 @@ function ExperimentPageContent() {
             }
 
             /* =====================================================
-               6. 数据库写入成功后，再显示“提交成功”
+               8. 全部成功
                ===================================================== */
 
             setSubmitted(true);
@@ -1670,120 +1716,122 @@ function ExperimentPageContent() {
             AI报告
             ================================================= */}
 
-                {activeTab === "report" && (
-                    <section className="space-y-6">
-                        <ExperimentReportWorkbench
-                            experimentId={experiment.knowledge_id ?? undefined}
-                            experimentName={experiment.name}
-                            rawData={reportRawData}
-                            analysisSummary={[
-                                `实验名称：${experiment.name}`,
-                                `实验关系：${config.relation}`,
-                                `实验公式：${config.formula}`,
-                                config.reportDescription,
-                                `有效实验数据：${validData.length} 组`,
-                                fitResult
-                                    ? `拟合模型：${fitResult.model}`
-                                    : "本次实验未采用统一拟合模型。",
-                                fitResult
-                                    ? `拟合方程：${fitResult.equation}`
-                                    : "",
-                                fitResult &&
-                                    fitResult.warnings.length > 0
-                                    ? `拟合提示：${fitResult.warnings.join("；")}`
-                                    : "",
-                                averageValue !== null
-                                    ? `当前计算得到的${config.deriveLabel ?? "计算结果"
-                                    }平均值：${formatNumber(
-                                        averageValue
-                                    )}${config.calculationUnit
-                                        ? ` ${config.calculationUnit}`
-                                        : ""
-                                    }`
-                                    : "当前数据暂未得到统一的单值计算结果。",
-                            ]
-                                .filter(Boolean)
-                                .join("\n")}
-                            generate={async (input) => {
-                                setGeneratingReport(true);
-                                setError("");
+                <section
+                    className={
+                        activeTab === "report"
+                            ? "space-y-6"
+                            : "hidden"
+                    }
+                >
+                    <ExperimentReportWorkbench
+                        experimentId={experiment.knowledge_id ?? undefined}
+                        experimentName={experiment.name}
+                        rawData={reportRawData}
+                        analysisSummary={[
+                            `实验名称：${experiment.name}`,
+                            `实验关系：${config.relation}`,
+                            `实验公式：${config.formula}`,
+                            config.reportDescription,
+                            `有效实验数据：${validData.length} 组`,
+                            fitResult
+                                ? `拟合模型：${fitResult.model}`
+                                : "本次实验未采用统一拟合模型。",
+                            fitResult
+                                ? `拟合方程：${fitResult.equation}`
+                                : "",
+                            fitResult &&
+                                fitResult.warnings.length > 0
+                                ? `拟合提示：${fitResult.warnings.join("；")}`
+                                : "",
+                            averageValue !== null
+                                ? `当前计算得到的${config.deriveLabel ?? "计算结果"}平均值：${formatNumber(
+                                    averageValue
+                                )}${config.calculationUnit
+                                    ? ` ${config.calculationUnit}`
+                                    : ""
+                                }`
+                                : "当前数据暂未得到统一的单值计算结果。",
+                        ]
+                            .filter(Boolean)
+                            .join("\n")}
+                        onReportElementReady={setReportElement}
+                        generate={async (input) => {
+                            setGeneratingReport(true);
+                            setError("");
 
-                                try {
-                                    const response = await fetch(
-                                        "/api/ai/report",
-                                        {
-                                            method: "POST",
-                                            headers: {
-                                                "Content-Type":
-                                                    "application/json",
-                                            },
-                                            body: JSON.stringify({
-                                                experimentId:
-                                                    experiment.knowledge_id,
-                                                rawData: input.rawData,
-                                                analysisSummary:
-                                                    input.analysisSummary,
-                                                studentNotes:
-                                                    input.studentNotes,
-                                            }),
-                                        }
-                                    );
-
-                                    const payload =
-                                        await response.json();
-
-                                    if (!response.ok) {
-                                        throw new Error(
-                                            payload?.error ??
-                                            "AI 实验报告生成失败。"
-                                        );
+                            try {
+                                const response = await fetch(
+                                    "/api/ai/report",
+                                    {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type":
+                                                "application/json",
+                                        },
+                                        body: JSON.stringify({
+                                            experimentId:
+                                                experiment.knowledge_id,
+                                            rawData: input.rawData,
+                                            analysisSummary:
+                                                input.analysisSummary,
+                                            studentNotes:
+                                                input.studentNotes,
+                                        }),
                                     }
+                                );
 
-                                    if (!payload?.draft) {
-                                        throw new Error(
-                                            "AI 服务没有返回报告内容。"
-                                        );
-                                    }
+                                const payload =
+                                    await response.json();
 
-                                    const draft = payload.draft;
-
-                                    setAiReport(
-                                        [
-                                            `【实验目的】\n${draft.purpose}`,
-                                            `【实验原理】\n${draft.principle}`,
-                                            `【实验仪器与装置】\n${draft.apparatus}`,
-                                            `【实验步骤】\n${draft.procedure}`,
-                                            `【数据处理与分析】\n${draft.dataAnalysis}`,
-                                            `【实验结果】\n${draft.results}`,
-                                            `【误差分析】\n${draft.errorAnalysis}`,
-                                            `【实验结论】\n${draft.conclusion}`,
-                                        ].join("\n\n")
+                                if (!response.ok) {
+                                    throw new Error(
+                                        payload?.error ||
+                                        "AI 实验报告生成失败。"
                                     );
-
-                                    return {
-                                        draft,
-                                    };
-                                } catch (error) {
-                                    console.error(
-                                        "生成实验报告失败：",
-                                        error
-                                    );
-
-                                    const message =
-                                        error instanceof Error
-                                            ? error.message
-                                            : "AI 实验报告生成失败。";
-
-                                    setError(message);
-
-                                    throw error;
-                                } finally {
-                                    setGeneratingReport(false);
                                 }
-                            }}
-                        />
-                    </section>
-                )}
+
+                                if (!payload?.draft) {
+                                    throw new Error(
+                                        "AI 服务没有返回报告内容。"
+                                    );
+                                }
+
+                                const draft = payload.draft;
+
+                                setAiReport(
+                                    [
+                                        `【实验目的】\n${draft.purpose}`,
+                                        `【实验原理】\n${draft.principle}`,
+                                        `【实验仪器与装置】\n${draft.apparatus}`,
+                                        `【实验步骤】\n${draft.procedure}`,
+                                        `【数据处理与分析】\n${draft.dataAnalysis}`,
+                                        `【实验结果】\n${draft.results}`,
+                                        `【误差分析】\n${draft.errorAnalysis}`,
+                                        `【实验结论】\n${draft.conclusion}`,
+                                    ].join("\n\n")
+                                );
+
+                                return { draft };
+                            } catch (error) {
+                                console.error(
+                                    "生成实验报告失败：",
+                                    error
+                                );
+
+                                const message =
+                                    error instanceof Error
+                                        ? error.message
+                                        : "AI 实验报告生成失败。";
+
+                                setError(message);
+
+                                throw error;
+                            } finally {
+                                setGeneratingReport(false);
+                            }
+                        }}
+                    />
+                </section>
 
                 {/* =================================================
             提交

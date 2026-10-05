@@ -4,13 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm --prefix smart-lab-report-toolkit run build && next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
     "@smart-lab/curve-fit-toolkit": "file:fit-toolkit",
-    "@smart-lab/experiment-report-toolkit": "file:../smart-lab-report-toolkit",
+    "@smart-lab/experiment-report-toolkit": "file:smart-lab-report-toolkit",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.2",
     "next": "16.3.8",
