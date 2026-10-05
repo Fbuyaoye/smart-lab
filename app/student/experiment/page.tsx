@@ -1720,7 +1720,7 @@ function ExperimentPageContent() {
                     className={
                         activeTab === "report"
                             ? "space-y-6"
-                            : "hidden"
+                            : "pointer-events-none absolute left-[-10000px] top-0 w-[794px]"
                     }
                 >
                     <ExperimentReportWorkbench

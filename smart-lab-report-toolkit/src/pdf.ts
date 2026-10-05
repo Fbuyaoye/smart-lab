@@ -23,14 +23,14 @@ export async function generateReportPdf(
   const printedHeight =
     (canvas.height * printedWidth) / canvas.width;
 
-  const image = canvas.toDataURL("image/png");
+  const image = canvas.toDataURL("image/jpeg",0.95);
 
   let position = margin;
   let remaining = printedHeight;
 
   pdf.addImage(
     image,
-    "PNG",
+    "JPEG",
     margin,
     position,
     printedWidth,
@@ -46,7 +46,7 @@ export async function generateReportPdf(
 
     pdf.addImage(
       image,
-      "PNG",
+      "JPEG",
       margin,
       position,
       printedWidth,
