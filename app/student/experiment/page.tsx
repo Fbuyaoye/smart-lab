@@ -461,6 +461,18 @@ function ExperimentPageContent() {
     const [reportElement, setReportElement] =
         useState<HTMLDivElement | null>(null);
 
+    const [reportStatus, setReportStatus] =
+        useState<"draft" | "submitted" | "graded" | null>(null);
+
+    const [teacherScore, setTeacherScore] =
+        useState<number | null>(null);
+
+    const [teacherComment, setTeacherComment] =
+        useState<string | null>(null);
+
+    const [gradedAt, setGradedAt] =
+        useState<string | null>(null);
+
     /* =======================================================
       taskId
       ======================================================= */
@@ -557,7 +569,7 @@ function ExperimentPageContent() {
                 error: reportError,
             } = await supabase
                 .from("reports")
-                .select("task_id, status")
+                .select("task_id, status, teacher_score, teacher_comment, graded_at")
                 .eq("student_id", user.id);
 
             if (reportError) {
@@ -678,6 +690,62 @@ function ExperimentPageContent() {
                 experimentData as Experiment
             );
 
+            /* =====================================================
+   加载当前学生的实验报告及教师批改结果
+   ===================================================== */
+
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+
+            if (!user) {
+                setError("登录状态已失效，请重新登录");
+                setLoading(false);
+                return;
+            }
+
+            const {
+                data: reportData,
+                error: reportError,
+            } = await supabase
+                .from("reports")
+                .select(
+                    "teacher_score, teacher_comment, graded_at, status"
+                )
+                .eq("task_id", taskId)
+                .eq("student_id", user.id)
+                .maybeSingle();
+
+            if (reportError) {
+                console.error(
+                    "加载实验报告结果失败：",
+                    reportError
+                );
+            } else if (reportData) {
+                setReportStatus(
+                    reportData.status as
+                    | "draft"
+                    | "submitted"
+                    | "graded"
+                );
+
+                setTeacherScore(
+                    reportData.teacher_score
+                );
+
+                setTeacherComment(
+                    reportData.teacher_comment
+                );
+
+                setGradedAt(
+                    reportData.graded_at
+                );
+            } else {
+                setReportStatus(null);
+                setTeacherScore(null);
+                setTeacherComment(null);
+                setGradedAt(null);
+            }
             setLoading(false);
         }
 
@@ -1028,13 +1096,32 @@ function ExperimentPageContent() {
                 error: existingReportError,
             } = await supabase
                 .from("reports")
-                .select("id, pdf_path")
+                .select(
+                    "id, pdf_path, status, teacher_score, teacher_comment, graded_at"
+                )
                 .eq("task_id", taskId)
                 .eq("student_id", user.id)
                 .maybeSingle();
 
             if (existingReportError) {
                 throw existingReportError;
+            }
+
+            /* =====================================================
+               已经批改的报告禁止再次提交
+               ===================================================== */
+
+            if (existingReport?.status === "graded") {
+                setReportStatus("graded");
+                setTeacherScore(existingReport.teacher_score);
+                setTeacherComment(existingReport.teacher_comment);
+                setGradedAt(existingReport.graded_at);
+
+                setError(
+                    "该实验已经批改，不能重复提交。"
+                );
+
+                return;
             }
 
             /* =====================================================
@@ -1840,6 +1927,10 @@ function ExperimentPageContent() {
                 {activeTab === "submit" && (
                     <section className="space-y-6">
 
+                        {/* ================================
+            提交实验
+           ================================= */}
+
                         <ContentCard title="提交实验">
 
                             <p className="leading-7 text-slate-600">
@@ -1873,27 +1964,137 @@ function ExperimentPageContent() {
 
                             </div>
 
+                            {/* 提交按钮 */}
+
                             <button
                                 type="button"
                                 onClick={handleSubmit}
-                                disabled={submitted}
+                                disabled={
+                                    submitted ||
+                                    reportStatus === "graded"
+                                }
                                 className="mt-8 rounded-xl bg-green-600 px-6 py-3 font-medium text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                                {submitted ? "已提交" : "提交实验"}
+                                {reportStatus === "graded"
+                                    ? "已批改"
+                                    : submitted
+                                        ? "已提交"
+                                        : "提交实验"}
                             </button>
 
                         </ContentCard>
 
+                        {/* ================================
+            刚刚提交成功
+           ================================= */}
+
                         {submitted && (
-                            <div className="rounded-2xl border border-green-200 bg-green-50 p-6 text-green-800">
-                                <div className="font-semibold">
-                                    实验提交成功
+                            <ContentCard title="提交成功">
+
+                                <div className="rounded-2xl border border-green-200 bg-green-50 p-6 text-green-800">
+
+                                    <div className="font-semibold">
+                                        实验提交成功
+                                    </div>
+
+                                    <div className="mt-2 text-sm leading-6">
+                                        当前实验数据、分析结果和实验报告已经提交。
+                                        请等待教师批改。
+                                    </div>
+
                                 </div>
 
-                                <div className="mt-2 text-sm">
-                                    当前实验数据、分析和报告已经完成提交流程。
+                            </ContentCard>
+                        )}
+
+                        {/* ================================
+            已提交，等待批改
+           ================================= */}
+
+                        {reportStatus === "submitted" &&
+                            !submitted && (
+                                <ContentCard title="提交状态">
+
+                                    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-800">
+
+                                        <div className="font-semibold">
+                                            实验报告已提交
+                                        </div>
+
+                                        <div className="mt-2 text-sm leading-6">
+                                            教师尚未完成批改，请耐心等待。
+                                        </div>
+
+                                    </div>
+
+                                </ContentCard>
+                            )}
+
+                        {/* ================================
+            教师已经批改
+           ================================= */}
+
+                        {reportStatus === "graded" && (
+                            <ContentCard title="教师批改结果">
+
+                                <div className="grid gap-4 md:grid-cols-2">
+
+                                    {/* 教师评分 */}
+
+                                    <div className="rounded-xl bg-blue-50 p-5">
+
+                                        <div className="text-sm text-blue-600">
+                                            教师评分
+                                        </div>
+
+                                        <div className="mt-2 text-3xl font-bold text-blue-800">
+                                            {teacherScore ?? "—"}
+
+                                            {teacherScore !== null && (
+                                                <span className="ml-1 text-base font-normal">
+                                                    分
+                                                </span>
+                                            )}
+                                        </div>
+
+                                    </div>
+
+                                    {/* 批改时间 */}
+
+                                    <div className="rounded-xl bg-slate-50 p-5">
+
+                                        <div className="text-sm text-slate-500">
+                                            批改时间
+                                        </div>
+
+                                        <div className="mt-2 font-medium text-slate-900">
+                                            {gradedAt
+                                                ? new Date(
+                                                    gradedAt
+                                                ).toLocaleString("zh-CN")
+                                                : "—"}
+                                        </div>
+
+                                    </div>
+
                                 </div>
-                            </div>
+
+                                {/* 教师评语 */}
+
+                                <div className="mt-5 rounded-xl bg-green-50 p-5">
+
+                                    <div className="text-sm font-medium text-green-700">
+                                        教师评语
+                                    </div>
+
+                                    <div className="mt-2 whitespace-pre-wrap leading-7 text-green-900">
+                                        {teacherComment ||
+                                            "教师暂未填写评语。"}
+                                    </div>
+
+                                </div>
+
+                            </ContentCard>
                         )}
 
                     </section>
