@@ -8,7 +8,7 @@ import { analyzeExperiment } from "./services/analysis.js";
 import { askDeepSeek } from "./services/deepseek.js";
 import { askGlm } from "./services/glm.js";
 import { askLocalAssistant, draftLocalReport, reviewLocalReport } from "./services/local-ai.js";
-import { knowledgeReportDraftMessages, qaKnowledgeMessages, reportMessages, reviewMessages } from "./services/prompts.js";
+import { knowledgeReportDraftMessages, knowledgeReviewMessages, qaKnowledgeMessages, reportMessages, reviewMessages } from "./services/prompts.js";
 import { retrieveKnowledge } from "./services/knowledge.js";
 
 const MAX_BODY_BYTES = 1_000_000;
@@ -174,6 +174,43 @@ function parseReportDraft(value: string): Partial<Record<ReportDraftKey, string>
   return result;
 }
 
+type ReviewDraft = {
+  dataQuality: string;
+  calculationConsistency: string;
+  conclusionConsistency: string;
+  suggestions: string[];
+  riskLevel: "low" | "medium" | "high";
+};
+
+function parseReviewDraft(value: string): ReviewDraft {
+  const normalized = value.trim().replace(/^```(?:json)?\s*|\s*```$/g, "");
+  const start = normalized.indexOf("{");
+  const end = normalized.lastIndexOf("}");
+  const candidate = start >= 0 && end > start ? normalized.slice(start, end + 1) : normalized;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(candidate);
+  } catch {
+    throw new AppError(502, "GLM 返回的审阅建议格式无效，请重试。 ");
+  }
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+    throw new AppError(502, "GLM 返回的审阅建议格式无效，请重试。 ");
+  }
+  const item = parsed as Record<string, unknown>;
+  const text = (key: "dataQuality" | "calculationConsistency" | "conclusionConsistency") => {
+    const value = item[key];
+    if (typeof value !== "string" || !value.trim() || value.length > 4_000) throw new AppError(502, "GLM 返回的审阅建议不完整，请重试。 ");
+    return value.trim();
+  };
+  const suggestions = item.suggestions;
+  if (!Array.isArray(suggestions) || suggestions.length < 2 || suggestions.length > 4 || suggestions.some((entry) => typeof entry !== "string" || !entry.trim() || entry.length > 1_000)) {
+    throw new AppError(502, "GLM 返回的改进建议不完整，请重试。 ");
+  }
+  const riskLevel = item.riskLevel;
+  if (riskLevel !== "low" && riskLevel !== "medium" && riskLevel !== "high") throw new AppError(502, "GLM 返回的风险等级无效，请重试。 ");
+  return { dataQuality: text("dataQuality"), calculationConsistency: text("calculationConsistency"), conclusionConsistency: text("conclusionConsistency"), suggestions: suggestions.map((entry) => entry.trim()), riskLevel };
+}
+
 async function handle(request: IncomingMessage, response: ServerResponse): Promise<void> {
   addCorsHeaders(request, response);
   if (request.method === "OPTIONS") return sendJson(response, 204, {});
@@ -224,6 +261,16 @@ async function handle(request: IncomingMessage, response: ServerResponse): Promi
     });
     const content = aiMode() === "glm" ? await askGlm(messages) : await askDeepSeek(messages);
     return sendJson(response, 200, { draft: parseReportDraft(content) });
+  }
+
+  if (path === "/v1/ai/review-draft") {
+    const experimentId = readExperimentId(body);
+    const finalContent = readText(body, "finalContent", 20_000);
+    const knowledge = await retrieveKnowledge(experimentId, finalContent);
+    if (aiMode() === "local") throw new AppError(503, "AI 审阅需要配置 GLM 或 DeepSeek 模式。 ");
+    const messages = knowledgeReviewMessages(knowledge, { rawData: body.rawData ?? {}, calculation: body.calculation ?? {}, finalContent });
+    const content = aiMode() === "glm" ? await askGlm(messages) : await askDeepSeek(messages);
+    return sendJson(response, 200, { review: parseReviewDraft(content) });
   }
 
   const spec = readExperiment(body);
