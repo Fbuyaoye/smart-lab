@@ -35,6 +35,7 @@ type Experiment = {
     principle: string | null;
     key_points: string | null;
     procedure: string | null;
+    knowledge_id: string | null;
 };
 
 type Task = {
@@ -643,7 +644,7 @@ function ExperimentPageContent() {
             } = await supabase
                 .from("experiments")
                 .select(
-                    "id, name, principle, key_points, procedure"
+                    "id, name, principle, key_points, procedure,knowledge_id"
                 )
                 .eq(
                     "id",
@@ -846,55 +847,90 @@ function ExperimentPageContent() {
 
     async function generateAIReport() {
         setGeneratingReport(true);
+        setError("");
 
-        await new Promise((resolve) =>
-            setTimeout(resolve, 700)
-        );
+        try {
+            if (!experiment?.knowledge_id) {
+                throw new Error("当前实验尚未配置知识库标识。");
+            }
 
-        const fitText = fitResult
-            ? `本实验采用${fitResult.model}拟合，拟合方程为：${fitResult.equation}。`
-            : "本实验主要依据实验关系和物理公式进行数据分析，不强制采用统一拟合模型。";
+            const analysisSummary = [
+                `实验名称：${experiment.name}`,
+                `实验关系：${config.relation}`,
+                `实验公式：${config.formula}`,
+                config.reportDescription,
+                `有效实验数据：${validData.length} 组`,
+                fitResult
+                    ? `拟合模型：${fitResult.model}`
+                    : "本次实验未采用统一拟合模型。",
+                fitResult
+                    ? `拟合方程：${fitResult.equation}`
+                    : "",
+                fitResult && fitResult.warnings.length > 0
+                    ? `拟合提示：${fitResult.warnings.join("；")}`
+                    : "",
+                averageValue !== null
+                    ? `当前计算得到的${config.deriveLabel ?? "计算结果"}平均值：${formatNumber(
+                        averageValue,
+                    )}${config.calculationUnit
+                        ? ` ${config.calculationUnit}`
+                        : ""}`
+                    : "当前数据暂未得到统一的单值计算结果。",
+            ]
+                .filter(Boolean)
+                .join("\n");
 
-        const warningText =
-            fitResult &&
-                fitResult.warnings.length > 0
-                ? `拟合提示：${fitResult.warnings.join(
-                    "；"
-                )}`
-                : "";
+            const response = await fetch("/api/ai/report", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    experimentId: experiment.knowledge_id,
+                    rawData: reportRawData,
+                    analysisSummary,
+                    studentNotes: "",
+                }),
+            });
 
-        const resultText =
-            averageValue !== null
-                ? `根据当前数据得到的${config.deriveLabel ?? "计算结果"}平均值约为 ${formatNumber(
-                    averageValue
-                )}${config.calculationUnit
-                    ? ` ${config.calculationUnit}`
-                    : ""
-                }。`
-                : "当前数据暂未得到统一的单值计算结果。";
+            const payload = await response.json();
 
-        const report = `
-实验名称：${experiment?.name ?? "未命名实验"}
+            if (!response.ok) {
+                throw new Error(
+                    payload?.error || "AI 实验报告生成失败。",
+                );
+            }
 
-实验关系：${config.relation}
+            if (!payload?.draft) {
+                throw new Error("AI 服务没有返回报告内容。");
+            }
 
-实验公式：${config.formula}
+            const draft = payload.draft;
 
-${config.reportDescription}
+            setAiReport(
+                [
+                    `【实验目的】\n${draft.purpose}`,
+                    `【实验原理】\n${draft.principle}`,
+                    `【实验仪器与装置】\n${draft.apparatus}`,
+                    `【实验步骤】\n${draft.procedure}`,
+                    `【数据处理与分析】\n${draft.dataAnalysis}`,
+                    `【实验结果】\n${draft.results}`,
+                    `【误差分析】\n${draft.errorAnalysis}`,
+                    `【实验结论】\n${draft.conclusion}`,
+                ].join("\n\n"),
+            );
+        } catch (error) {
+            console.error("生成实验报告失败：", error);
 
-本次共录入 ${validData.length} 组有效实验数据。
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : "AI 实验报告生成失败。";
 
-${fitText}
-
-${resultText}
-
-${warningText}
-
-实验结果应结合实验原理、仪器精度和测量误差进行进一步分析。
-    `.trim();
-
-        setAiReport(report);
-        setGeneratingReport(false);
+            setError(message);
+        } finally {
+            setGeneratingReport(false);
+        }
     }
 
     /* =======================================================
@@ -1636,36 +1672,116 @@ ${warningText}
 
                 {activeTab === "report" && (
                     <section className="space-y-6">
+                        <ExperimentReportWorkbench
+                            experimentId={experiment.knowledge_id ?? undefined}
+                            experimentName={experiment.name}
+                            rawData={reportRawData}
+                            analysisSummary={[
+                                `实验名称：${experiment.name}`,
+                                `实验关系：${config.relation}`,
+                                `实验公式：${config.formula}`,
+                                config.reportDescription,
+                                `有效实验数据：${validData.length} 组`,
+                                fitResult
+                                    ? `拟合模型：${fitResult.model}`
+                                    : "本次实验未采用统一拟合模型。",
+                                fitResult
+                                    ? `拟合方程：${fitResult.equation}`
+                                    : "",
+                                fitResult &&
+                                    fitResult.warnings.length > 0
+                                    ? `拟合提示：${fitResult.warnings.join("；")}`
+                                    : "",
+                                averageValue !== null
+                                    ? `当前计算得到的${config.deriveLabel ?? "计算结果"
+                                    }平均值：${formatNumber(
+                                        averageValue
+                                    )}${config.calculationUnit
+                                        ? ` ${config.calculationUnit}`
+                                        : ""
+                                    }`
+                                    : "当前数据暂未得到统一的单值计算结果。",
+                            ]
+                                .filter(Boolean)
+                                .join("\n")}
+                            generate={async (input) => {
+                                setGeneratingReport(true);
+                                setError("");
 
-                        <ContentCard title="AI 实验报告">
+                                try {
+                                    const response = await fetch(
+                                        "/api/ai/report",
+                                        {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type":
+                                                    "application/json",
+                                            },
+                                            body: JSON.stringify({
+                                                experimentId:
+                                                    experiment.knowledge_id,
+                                                rawData: input.rawData,
+                                                analysisSummary:
+                                                    input.analysisSummary,
+                                                studentNotes:
+                                                    input.studentNotes,
+                                            }),
+                                        }
+                                    );
 
-                            <p className="leading-7 text-slate-600">
-                                AI 将根据当前实验名称、实验关系、实验公式、实验数据和分析结果生成实验报告。
-                            </p>
+                                    const payload =
+                                        await response.json();
 
-                            <button
-                                type="button"
-                                onClick={generateAIReport}
-                                disabled={generatingReport}
-                                className="mt-6 rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                {generatingReport
-                                    ? "正在生成……"
-                                    : "生成实验报告"}
-                            </button>
+                                    if (!response.ok) {
+                                        throw new Error(
+                                            payload?.error ??
+                                            "AI 实验报告生成失败。"
+                                        );
+                                    }
 
-                        </ContentCard>
+                                    if (!payload?.draft) {
+                                        throw new Error(
+                                            "AI 服务没有返回报告内容。"
+                                        );
+                                    }
 
-                        {aiReport && (
-                            <ContentCard title="实验报告">
+                                    const draft = payload.draft;
 
-                                <div className="whitespace-pre-wrap rounded-xl bg-slate-50 p-6 leading-8 text-slate-700">
-                                    {aiReport}
-                                </div>
+                                    setAiReport(
+                                        [
+                                            `【实验目的】\n${draft.purpose}`,
+                                            `【实验原理】\n${draft.principle}`,
+                                            `【实验仪器与装置】\n${draft.apparatus}`,
+                                            `【实验步骤】\n${draft.procedure}`,
+                                            `【数据处理与分析】\n${draft.dataAnalysis}`,
+                                            `【实验结果】\n${draft.results}`,
+                                            `【误差分析】\n${draft.errorAnalysis}`,
+                                            `【实验结论】\n${draft.conclusion}`,
+                                        ].join("\n\n")
+                                    );
 
-                            </ContentCard>
-                        )}
+                                    return {
+                                        draft,
+                                    };
+                                } catch (error) {
+                                    console.error(
+                                        "生成实验报告失败：",
+                                        error
+                                    );
 
+                                    const message =
+                                        error instanceof Error
+                                            ? error.message
+                                            : "AI 实验报告生成失败。";
+
+                                    setError(message);
+
+                                    throw error;
+                                } finally {
+                                    setGeneratingReport(false);
+                                }
+                            }}
+                        />
                     </section>
                 )}
 

@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  transpilePackages: ["@smart-lab/experiment-report-toolkit"],
 };
 
 export default nextConfig;
