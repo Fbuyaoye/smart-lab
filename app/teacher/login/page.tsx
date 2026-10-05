@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/browser";
-import { getSupabaseConfigurationError } from "@/lib/supabase/config";
+import { getSupabaseConfig, getSupabaseConfigurationError } from "@/lib/supabase/config";
 
 const accessMessages: Record<string, string> = {
   "teacher-only": "该账号已登录，但还没有教师权限。请让管理员把 public.users.role 设置为 teacher，然后退出并重新登录。",
@@ -15,6 +15,7 @@ const accessMessages: Record<string, string> = {
 
 export default function TeacherLoginPage() {
   const supabase = createClient();
+  const supabaseConfig = getSupabaseConfig();
   const configurationError = getSupabaseConfigurationError();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -39,10 +40,12 @@ export default function TeacherLoginPage() {
     try {
       const { error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (signInError) {
+        const retryable = signInError.name === "AuthRetryableFetchError"
+          || /failed to fetch|fetch failed|network|connect|dns|timeout/i.test(signInError.message);
         setError(signInError.message.includes("timed out")
           ? "连接超时，请检查网络后重试。"
-          : signInError.name === "AuthRetryableFetchError"
-            ? "暂时无法连接登录服务，请稍后重试。"
+          : retryable
+            ? `无法连接 Supabase 登录服务（${supabaseConfig.url}）。请确认项目未暂停、当前网络可以访问该地址，并在修改环境变量后重启或重新部署教师端。`
             : signInError.code === "invalid_credentials" || signInError.message === "Invalid login credentials"
               ? "邮箱或密码不正确，请重新输入。"
               : signInError.message);
