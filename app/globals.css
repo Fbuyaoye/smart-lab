@@ -27,6 +27,9 @@ h1 { font-size:clamp(26px,4vw,38px); line-height:1.2; margin:0; } h2 { font-size
 .experiment-detail-section { background:#f7f8fd; border-radius:18px; padding:26px 30px 28px; }
 .experiment-detail-section h3 { color:var(--ink); font-size:clamp(20px,2.2vw,26px); line-height:1.35; margin:0 0 16px; }
 .experiment-detail-section p { color:#4c5a76; font-size:clamp(17px,1.8vw,23px); line-height:1.8; margin:0; white-space:pre-wrap; overflow-wrap:anywhere; }
+.experiment-formula { background:#fff; border-radius:12px; margin-top:18px; padding:14px 16px; }
+.experiment-formula span { color:var(--muted); display:block; font-size:13px; margin-bottom:7px; }
+.experiment-formula strong { color:var(--ink); font-family:Georgia,"Times New Roman",serif; font-size:clamp(18px,2vw,25px); font-weight:600; letter-spacing:.02em; }
 .filter-controls { display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
 .filter-controls select { min-width:118px; }
 .sr-only { height:1px; margin:-1px; overflow:hidden; position:absolute; width:1px; clip:rect(0,0,0,0); white-space:nowrap; }
