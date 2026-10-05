@@ -6,7 +6,7 @@
 
 本次项目：`cvznriztyfugjrgubobj`。Project URL 为 `https://cvznriztyfugjrgubobj.supabase.co`。
 控制台入口：[打开 SQL Editor](https://supabase.com/dashboard/project/cvznriztyfugjrgubobj/sql)。
-`.env.local` 被 Git 忽略，不随代码同步；新检出的项目需重新填写 URL 和 publishable key（也兼容 `NEXT_PUBLIC_SUPABASE_ANON_KEY`）。部署平台的环境变量需单独填写，然后重新构建和部署。教师端 AI 批改优先配置 `AI_SERVICE_URL` 和 `AI_SERVICE_TOKEN`；模型密钥和服务间令牌只放服务端环境变量。
+`.env.local` 被 Git 忽略，不随代码同步；新检出的项目需重新填写 URL 和 publishable key（也兼容 `NEXT_PUBLIC_SUPABASE_ANON_KEY`）。部署平台的环境变量需单独填写，然后重新构建和部署。教师端 AI 批改优先配置 `AI_SERVICE_URL` 和 `AI_SERVICE_TOKEN`，默认转发到 `/v1/ai/review-draft`；模型密钥和服务间令牌只放服务端环境变量。
 
 ## 1. 先确认项目和备份
 

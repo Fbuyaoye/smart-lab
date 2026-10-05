@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getReviewModelConfig, getReviewModelConfigurationError } from "@/lib/ai/review-config";
+import { getReviewModelConfig, getReviewModelConfigurationError, getReviewModelCredentialError } from "@/lib/ai/review-config";
 import type { AiReview } from "@/lib/teacher-review-toolkit/types";
 
 const MAX_CONTENT_LENGTH = 10_000;
@@ -45,17 +45,6 @@ function parseReviewText(value: unknown): AiReview | null {
   };
 }
 
-function rowsFromRawData(rawData: unknown): unknown[] {
-  if (Array.isArray(rawData)) return rawData;
-  if (rawData && typeof rawData === "object" && !Array.isArray(rawData)) {
-    const rows = (rawData as Record<string, unknown>).rows;
-    if (Array.isArray(rows)) return rows;
-    const validData = (rawData as Record<string, unknown>).validData;
-    if (Array.isArray(validData)) return validData;
-  }
-  return [];
-}
-
 async function readBody(request: Request) {
   const body = await request.json().catch(() => null) as Record<string, unknown> | null;
   if (!body || typeof body.experimentId !== "string" || !body.experimentId.trim()) throw new Error("实验标识不能为空。");
@@ -92,13 +81,14 @@ export async function POST(request: Request) {
     let provider = "teacher-review-toolkit";
     if (serviceUrl) {
       if (!serviceToken) return NextResponse.json({ error: "AI_SERVICE_TOKEN 尚未配置。" }, { status: 503 });
-      const upstream = await fetch(`${serviceUrl.replace(/\/$/, "")}/v1/ai/review`, {
+      const reviewPath = process.env.AI_SERVICE_REVIEW_PATH?.trim() || "/v1/ai/review-draft";
+      const upstream = await fetch(`${serviceUrl.replace(/\/$/, "")}${reviewPath.startsWith("/") ? reviewPath : `/${reviewPath}`}`, {
         method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${serviceToken}` },
-        body: JSON.stringify({ experimentId: input.experimentId, rows: rowsFromRawData(input.rawData), studentConclusion: input.finalContent, calculation: input.calculation }), signal: controller.signal, cache: "no-store",
+        body: JSON.stringify({ experimentId: input.experimentId, rawData: input.rawData, calculation: input.calculation, finalContent: input.finalContent }), signal: controller.signal, cache: "no-store",
       });
       const payload = await upstream.json().catch(() => ({}));
       if (!upstream.ok) return NextResponse.json({ error: payload.error ?? "AI 服务请求失败。" }, { status: 502 });
-      review = parseReviewText(payload.review);
+      review = parseReviewText(payload.review ?? payload.reviewDraft ?? payload.draft ?? payload.output_text ?? payload.response);
     } else if (modelConfig) {
       provider = modelConfig.provider;
       const upstream = await fetch(modelConfig.endpoint, {
@@ -109,7 +99,10 @@ export async function POST(request: Request) {
         ] }), signal: controller.signal, cache: "no-store",
       });
       const payload = await upstream.json().catch(() => ({}));
-      if (!upstream.ok) return NextResponse.json({ error: payload.error?.message ?? `${modelConfig.provider} 请求失败。` }, { status: 502 });
+      if (!upstream.ok) {
+        const message = typeof payload.error?.message === "string" ? payload.error.message : "教师评阅模型请求失败。";
+        return NextResponse.json({ error: upstream.status === 401 || upstream.status === 403 ? getReviewModelCredentialError(modelConfig) : message }, { status: upstream.status === 401 || upstream.status === 403 ? 503 : 502 });
+      }
       review = parseReviewText(payload.review ?? payload.choices?.[0]?.message?.content ?? payload.output_text ?? payload.response);
     }
     if (!review) return NextResponse.json({ error: "AI 未返回有效的结构化审阅结果。" }, { status: 502 });

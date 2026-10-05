@@ -18,7 +18,7 @@ npm run dev
 
 复制后必须填写 `.env.local` 中的 `NEXT_PUBLIC_SUPABASE_URL` 和 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`；示例文件中的空值不能用于登录。旧版项目也可以通过 `NEXT_PUBLIC_SUPABASE_ANON_KEY` 提供 anon key。Windows 命令提示符中使用 `copy` 代替 `cp`。
 
-当前 Supabase 项目地址为 `https://cvznriztyfugjrgubobj.supabase.co`，公开 key 从同一项目的 **Settings → API Keys** 获取，或使用学生端已有的相同公开配置。修改后重启开发服务。教师端的报告检查页已接入 `teacher-review-toolkit`：优先通过服务端 `AI_SERVICE_URL` 和 `AI_SERVICE_TOKEN` 调用 AI 服务的 `/v1/ai/review`，也可用 `TEACHER_REVIEW_API_URL`、`TEACHER_REVIEW_API_KEY`、`TEACHER_REVIEW_MODEL` 连接 OpenAI 兼容推理服务，最后兼容回退到 `DEEPSEEK_API_KEY`。模型密钥和服务间令牌只放服务端环境变量。
+当前 Supabase 项目地址为 `https://cvznriztyfugjrgubobj.supabase.co`，公开 key 从同一项目的 **Settings → API Keys** 获取，或使用学生端已有的相同公开配置。修改后重启开发服务。教师端的报告检查页已接入 `teacher-review-toolkit`：优先通过服务端 `AI_SERVICE_URL` 和 `AI_SERVICE_TOKEN` 调用 AI 服务的 `/v1/ai/review-draft`，也可用 `TEACHER_REVIEW_API_URL`、`TEACHER_REVIEW_API_KEY`、`TEACHER_REVIEW_MODEL` 连接 OpenAI 兼容推理服务，最后兼容回退到 `DEEPSEEK_API_KEY`。模型密钥和服务间令牌只放服务端环境变量。
 
 如果报错发生在线上网站，需在部署平台设置上述两项环境变量，并重新构建和部署；本地 `.env.local` 不会上传到部署平台。Next.js 在构建时写入 `NEXT_PUBLIC_*` 配置，仅刷新浏览器不会更新它们。
 

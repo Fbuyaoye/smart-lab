@@ -46,3 +46,12 @@ export function getReviewModelConfigurationError() {
   }
   return "尚未配置教师评阅模型。请至少配置 AI_SERVICE_URL + AI_SERVICE_TOKEN，或 DEEPSEEK_API_KEY；修改 .env.local 后重启开发服务。";
 }
+
+export function getReviewModelCredentialError(config: ReviewModelConfig): string {
+  if (config.provider === "teacher-review-toolkit" && /open\.bigmodel\.cn/i.test(config.endpoint)) {
+    if (!config.apiKey || !config.apiKey.includes(".") || config.apiKey.length < 30) {
+      return "GLM API Key 格式不正确。请到智谱开放平台复制完整的 API Key（通常形如 id.secret），不要使用服务间令牌或截短值。";
+    }
+  }
+  return "教师评阅模型凭据无效，请检查 API Key 是否过期、是否复制完整，并重启开发服务。";
+}
