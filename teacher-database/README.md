@@ -60,4 +60,4 @@ Railway 上的 AI 服务必须把知识库索引一起部署。使用 `origin/ai
 4. 教师在“报告检查”查看学生报告，生成 AI 建议并保存评分。`submitted_at` 和 `graded_at` 由数据库触发器写入。
 5. 用学生账号确认不能读取其他学生报告、不能写入教师评分或将报告标为 `graded`。
 
-学生端接入时应使用同一个 Supabase 项目和 `NEXT_PUBLIC_SUPABASE_URL`、`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`，不要把 DeepSeek Key 放到浏览器端。
+学生端接入时应使用同一个 Supabase 项目和 `NEXT_PUBLIC_SUPABASE_URL`、`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`。
