@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/browser";
+import { useRouter } from "next/navigation";
 
 type TaskRow = {
   id: number;
@@ -34,6 +35,7 @@ type Task = {
 };
 
 export default function Home() {
+  const router = useRouter();
   console.log("========== 学生首页正在运行 ==========");
   const [studentName, setStudentName] = React.useState("同学");
   const [studentId, setStudentId] = React.useState("");
@@ -41,6 +43,25 @@ export default function Home() {
   const [tasks, setTasks] = React.useState<Task[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState("");
+
+  // ==========================================
+  // 新增：未登录自动跳转到登录页
+  // ==========================================
+  React.useEffect(() => {
+    async function checkAuth() {
+      const supabase = createClient();
+      if (!supabase) return;
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        router.replace("/login");
+      }
+    }
+    checkAuth();
+  }, [router]);
 
   React.useEffect(() => {
     async function loadHomeData() {
