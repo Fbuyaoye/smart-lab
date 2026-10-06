@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm --prefix smart-lab-report-toolkit run build && next build",
+    "build": "npm --prefix fit-toolkit run build && npm --prefix smart-lab-report-toolkit run build && next build",
     "start": "next start",
     "lint": "eslint"
   },
