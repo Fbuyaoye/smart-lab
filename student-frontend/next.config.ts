@@ -7,14 +7,6 @@ const nextConfig: NextConfig = {
     "@smart-lab/curve-fit-toolkit"
   ],
   // 添加以下 rewrites
-  async rewrites() {
-    return [
-      {
-        source: '/teacher/:path*',
-        destination: 'https://你的教师端Vercel域名/teacher/:path*',
-      },
-    ];
-  },
-};
+}
 
 export default nextConfig;

@@ -1,0 +1,12 @@
+ {
+ "version": 2,
+  "builds": [
+    { "src": "student-frontend/package.json", "use": "@vercel/next" },
+    { "src": "teacher-database/package.json", "use": "@vercel/next" }
+  ],
+  "routes": [
+    { "src": "/student/(.*)", "dest": "/student-frontend/$1" },
+    { "src": "/teacher/(.*)", "dest": "/teacher-database/$1" },
+    { "src": "/(.*)", "dest": "/student-frontend/$1" }
+  ]
+}
