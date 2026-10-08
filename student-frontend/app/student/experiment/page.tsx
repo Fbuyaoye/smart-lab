@@ -1468,7 +1468,7 @@ function ExperimentPageContent() {
                                                     placeholder={
                                                         config.xPlaceholder
                                                     }
-                                                    className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-none focus:border-blue-500"
+                                                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-black outline-none focus:border-blue-500 text-slate-900"
                                                 />
                                             </td>
 
@@ -1485,7 +1485,7 @@ function ExperimentPageContent() {
                                                     placeholder={
                                                         config.yPlaceholder
                                                     }
-                                                    className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-none focus:border-blue-500"
+                                                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-black outline-none focus:border-blue-500 text-slate-900"
                                                 />
                                             </td>
 
@@ -1558,11 +1558,11 @@ function ExperimentPageContent() {
                                                         序号
                                                     </th>
 
-                                                    <th className="px-4 py-3">
+                                                    <th className="px-4 py-3 ">
                                                         {config.xLabel}
                                                     </th>
 
-                                                    <th className="px-4 py-3">
+                                                    <th className="px-4 py-3 ">
                                                         {config.yLabel}
                                                     </th>
 
@@ -1578,7 +1578,7 @@ function ExperimentPageContent() {
                                                     (row, index) => (
                                                         <tr
                                                             key={index}
-                                                            className="border-b border-slate-100"
+                                                            className="border-b border-slate-100 text-black"
                                                         >
 
                                                             <td className="px-4 py-3">
